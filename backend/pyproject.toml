@@ -1,0 +1,30 @@
+[project]
+name = "wo-backend"
+version = "2.0.0"
+description = "WO — Water Optimization: knowledge-based decision support for agricultural water management"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 150  # bilingual (AR/EN) message templates
+target-version = "py311"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "BLE", "C4", "SIM"]
+ignore = ["S101", "S105", "S106", "B008", "N818", "SIM108", "UP040", "UP046", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B", "N"]
+"app/ai/knowledge_base/reference_data.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = false
+check_untyped_defs = true
+files = ["app/ai", "app/agronomy", "app/optimization", "app/integrations"]

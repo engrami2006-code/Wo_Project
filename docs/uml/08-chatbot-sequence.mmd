@@ -1,0 +1,100 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant R as React (ChatbotPage)
+    participant A as API POST /api/chatbot/query
+    participant C as ChatbotService
+    participant N as NLU (nlu.py)
+    participant I as IrrigationService
+    participant W as WeatherService
+    participant P as Perception
+    participant K as KBAgent
+    participant F as ForwardChainer (decide)
+    participant E as ExplanationBuilder
+    participant B as BackwardChainer
+
+    U->>R: "هل أسقي الطماطم اليوم؟"
+    R->>A: {message, session_id, language, optional manual inputs} + Bearer JWT
+    A->>C: handle(message, session_id, language, manual inputs)
+    C->>C: load / create ChatSession (owner only)
+    C->>N: normalize(message)
+    N-->>C: "هل اسقي الطماطم اليوم"
+    C->>N: detect_intent · extract_quantity_l · extract_date · extract_labeled · match_candidates(user's plantings)
+    N-->>C: irrigation_advice (3.5), date = today, plantings = [tomato…]
+    alt more than one matching planting
+        C->>C: reply status = clarification ("Which planting do you mean?"), options = planting chips, pending slot = planting
+    else exactly one planting (or chosen chip)
+        C->>I: recommend(farm_crop_id, date, available_water_l, et0_override_mm, precipitation_override_mm, persist = false)
+        I->>I: get_planting + get_farm (Perm.AI_RUN), load_knowledge
+        I->>W: get_weather(farm, params)
+        W-->>I: WeatherStatus fresh · cached · unavailable
+        I->>P: perceive_irrigation(ctx)
+        P-->>I: percepts (true/false/unknown) + FAO-56 calculation
+        I->>K: run_cycle(percepts, focus_group = irrigation_action, goals)
+        K->>K: TELL(known percepts)
+        K->>F: decide(rules, working memory)
+        F-->>K: fired rules, agenda, conflict sets, winner
+        K->>E: build(decision, goals = [irrigate_today, skip_irrigation_today])
+        E->>B: ask(goal, known percepts)
+        B-->>E: proof tree · missing percepts
+        E-->>K: explanation contract
+        K->>K: TELL(action), t ← t + 1
+        K-->>I: AgentCycle
+        I-->>C: {status, explanation}
+        alt recommendation derived
+            C->>C: template answer (recommendation, why, rules, advisories)
+        else insufficient data
+            C->>C: list missing-data hints. If ET0 or rain is missing: pending slot weather_inputs, ask for "ET0 6.2 rain 0". Else if available water is missing: pending slot available_water_l, ask how many litres
+            Note over C: next message «التبخر 6.2 المطر 0» or "5000 لتر" fills the slot and re-runs the agent
+        end
+    end
+    C->>C: store ChatMessage (user + assistant) and session.state
+    C-->>A: {session_id, intent, text, status, options, explanation, nlu}
+    A-->>R: ChatReply (200)
+    R-->>U: answer bubble, quick-reply chips, "Show reasoning" (RecommendationCard)

@@ -1,0 +1,81 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        forest: {
+          DEFAULT: 'rgb(var(--wo-forest) / <alpha-value>)',
+          50: '#EEF5F1',
+          100: '#D5E6DC',
+          200: '#A9CCB8',
+          300: '#6FA88A',
+          400: '#3D7F60',
+          500: '#1F5C44',
+          600: '#164C38',
+          700: '#0F3D2E',
+          800: '#0B2E22',
+          900: '#071F17',
+        },
+        emerald: { DEFAULT: 'rgb(var(--wo-emerald) / <alpha-value>)' },
+        teal: { DEFAULT: 'rgb(var(--wo-teal) / <alpha-value>)' },
+        water: {
+          DEFAULT: 'rgb(var(--wo-water) / <alpha-value>)',
+          50: '#EFF9FE',
+          100: '#DDF2FD',
+          600: '#0284C7',
+          700: '#0369A1',
+        },
+        earth: {
+          DEFAULT: 'rgb(var(--wo-earth) / <alpha-value>)',
+          50: '#FFF4ED',
+          100: '#FFE6D5',
+          700: '#9A3412',
+        },
+        canvas: 'rgb(var(--wo-canvas) / <alpha-value>)',
+        surface: 'rgb(var(--wo-surface) / <alpha-value>)',
+        ink: { DEFAULT: 'rgb(var(--wo-ink) / <alpha-value>)' },
+        muted: 'rgb(var(--wo-muted) / <alpha-value>)',
+        line: 'rgb(var(--wo-line) / <alpha-value>)',
+        info: 'rgb(var(--wo-info) / <alpha-value>)',
+        warning: 'rgb(var(--wo-warning) / <alpha-value>)',
+        critical: 'rgb(var(--wo-critical) / <alpha-value>)',
+      },
+      fontFamily: {
+        sans: ['"IBM Plex Sans"', '"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
+        arabic: ['"IBM Plex Sans Arabic"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+      },
+      borderRadius: {
+        '4xl': '2rem',
+      },
+      boxShadow: {
+        card: '0 1px 2px rgb(16 35 27 / 0.04), 0 4px 16px -6px rgb(16 35 27 / 0.08)',
+        lift: '0 2px 4px rgb(16 35 27 / 0.05), 0 14px 32px -12px rgb(16 35 27 / 0.18)',
+        pop: '0 12px 40px -8px rgb(16 35 27 / 0.28)',
+      },
+      keyframes: {
+        'page-in': { from: { opacity: '0', transform: 'translateY(6px)' }, to: { opacity: '1', transform: 'none' } },
+        'reveal': { from: { opacity: '0', transform: 'translateY(10px)' }, to: { opacity: '1', transform: 'none' } },
+        'fade': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'drawer-in-end': { from: { transform: 'translateX(var(--drawer-from, 100%))' }, to: { transform: 'none' } },
+        'scale-in': { from: { opacity: '0', transform: 'scale(.97)' }, to: { opacity: '1', transform: 'none' } },
+        'shimmer': { '100%': { transform: 'translateX(100%)' } },
+        'flow': { to: { strokeDashoffset: '-24' } },
+      },
+      animation: {
+        'page-in': 'page-in .32s cubic-bezier(.2,.7,.2,1) both',
+        'reveal': 'reveal .45s cubic-bezier(.2,.7,.2,1) both',
+        'fade': 'fade .2s ease-out both',
+        'drawer-in': 'drawer-in-end .28s cubic-bezier(.2,.7,.2,1) both',
+        'scale-in': 'scale-in .18s ease-out both',
+        'shimmer': 'shimmer 1.4s infinite',
+        'flow': 'flow 1.2s linear infinite',
+      },
+    },
+  },
+  plugins: [],
+};

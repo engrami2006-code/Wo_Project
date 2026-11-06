@@ -1,0 +1,132 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+flowchart TB
+    subgraph IN["Inputs (real data only)"]
+        direction LR
+        d1["Planting, crop (FAO-56), area,<br/>method efficiency"]
+        d2["Weather snapshot<br/>(fresh · cached · unavailable)<br/>or manual ET0"]
+        d3["Available water<br/>(request or farm allowance)"]
+        d4["Hydroponic record<br/>+ configured pH/EC ranges"]
+        d5["Water-record history"]
+        q["User question (chatbot)<br/>or system event"]
+    end
+
+    subgraph PER["Perception — ai/perception/"]
+        direction LR
+        p1["perceive_irrigation<br/>(FAO-56 calculation)"]
+        p2["perceive_hydroponics<br/>(water balance)"]
+        p3["perceive_weather · perceive_usage<br/>perceive_records_gap"]
+        ps["PerceptSet<br/>true · false · unknown + evidence"]
+        p1 --> ps
+        p2 --> ps
+        p3 --> ps
+    end
+
+    subgraph KB["Knowledge base — PostgreSQL, loaded as KnowledgeSnapshot"]
+        direction LR
+        rules["39 Horn rules<br/>body: x / ~x (known false) ⇒ head"]
+        facts["16 parameters<br/>scientific (sourced) · policy"]
+        ax["8 axioms<br/>7 domain · 1 integrity constraint"]
+        cat["27-symbol percept catalog"]
+    end
+
+    subgraph AG["KBAgent — ai/agent.py"]
+        direction LR
+        tell["TELL(percepts)<br/>working memory = known percepts"]
+        subgraph INF["Inference — ai/inference/"]
+            direction LR
+            fc["Forward chaining<br/>PL-FC-ENTAILS, agenda"]
+            cr["Conflict resolution<br/>priority → specificity → code<br/>(two passes)"]
+            bc["Backward chaining<br/>AND-OR proof, missing data"]
+            fc --> cr
+        end
+        act["TELL(action)<br/>t ← t + 1"]
+        tell --> fc
+    end
+
+    ex["ExplanationBuilder<br/>recommendation · reason · facts · rules<br/>alternatives · what could change · missing data<br/>calculation · certainty · trace"]
+
+    subgraph OUT["Outputs"]
+        direction LR
+        o1["Recommendation (stored)"]
+        o2["Alerts (deduplicated, auto-resolved)"]
+        o3["Chat answer (templates AR/EN)"]
+        o4["Insufficient data + missing items"]
+    end
+
+    subgraph LOG["Logic — ai/logic/ (validation & Logic Lab)"]
+        direction LR
+        syn["Parser / AST"]
+        cnf["CNF"]
+        tt["TT-ENTAILS"]
+        dp["DPLL"]
+        res["PL-RESOLUTION"]
+        val["validate_rules<br/>domain axioms + Clark completion + DPLL:<br/>consistency · integrity constraints · dead rules<br/>conflicts · coverage · redundancy"]
+        syn --> cnf --> dp --> val
+        syn --> tt
+        cnf --> res
+    end
+
+    admin(["SUPER_ADMIN edits<br/>rules / facts"])
+
+    d1 & d2 & d3 --> p1
+    d4 --> p2
+    d2 & d5 --> p3
+    ps --> tell
+    KB --> AG
+    cr --> ex
+    bc --> ex
+    ex --> act
+    ex --> OUT
+    q -.-> AG
+    admin --> val
+    val -- "gate: reject if not ok" --> KB
+
+    classDef wo fill:#0F3D2E,stroke:#0F3D2E,color:#ffffff
+    classDef accent fill:#ECFDF5,stroke:#10B981,color:#0F3D2E
+    class tell,act,ex wo
+    class fc,cr,bc,val accent

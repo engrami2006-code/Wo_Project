@@ -1,0 +1,111 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+flowchart TB
+    user(["Farmer · Manager · Employee · Admin<br/>(browser, Arabic / English)"])
+
+    subgraph FE["Frontend — React 18 + TypeScript (Vite, Tailwind, Recharts)"]
+        direction LR
+        pages["Pages<br/>Dashboard · Farms · Water · Smart irrigation<br/>Hydroponics · Weather · Assistant · Land · KB"]
+        explain["Explainable-AI components<br/>RecommendationCard · ReasoningFlow · ProofTree"]
+        client["API client (services/api.ts)<br/>JWT Bearer · error envelope"]
+        i18n["i18n AR/EN · RTL"]
+    end
+
+    nginx["nginx — static bundle, /api proxy,<br/>CSP & security headers"]
+
+    subgraph BE["Backend — FastAPI (Python)"]
+        direction TB
+        routers["api/ — 16 thin routers (/api/...)"]
+        core["core/ — config · JWT + Argon2id · RBAC deps<br/>error envelope · security headers · rate limiter · JSON logs"]
+        services["services/ — business logic, persistence, audit<br/>access.py: roles + resource isolation (404)"]
+        subgraph AI["ai/ — Knowledge-based agent (pure)"]
+            direction LR
+            perception["Perception<br/>numbers → percepts"]
+            kb["Knowledge base<br/>rules · facts · axioms · percept catalog"]
+            inference["Inference<br/>forward chaining · conflict resolution<br/>backward chaining"]
+            expl["Explanation builder"]
+            logic["Logic<br/>CNF · TT-ENTAILS · DPLL · resolution"]
+            nlu["Chatbot NLU (AR/EN)"]
+        end
+        subgraph OPT["optimization/ (pure)"]
+            direction LR
+            search["Land distribution<br/>BFS · UCS · Greedy · A*"]
+            csp["Irrigation scheduling CSP<br/>AC-3 · MRV · LCV · FC"]
+        end
+        subgraph AGR["agronomy/ (pure)"]
+            direction LR
+            fao["FAO-56 single Kc"]
+            hb["Hydroponic water balance"]
+        end
+        weather["integrations/weather<br/>WeatherProvider ← OpenMeteoProvider"]
+    end
+
+    db[("PostgreSQL 16<br/>26 tables · Alembic<br/>reference knowledge + operational data")]
+    om["Open-Meteo forecast API<br/>(optional — offline fallback)"]
+
+    user --> pages
+    pages --- explain
+    pages --> client
+    client -- "HTTPS JSON /api" --> nginx
+    nginx --> routers
+    routers --> services
+    core -.-> routers
+    services --> AI
+    services --> OPT
+    services --> AGR
+    services --> weather
+    perception --> kb --> inference --> expl
+    logic -.-> kb
+    services <--> db
+    weather -. "httpx" .-> om
+
+    classDef wo fill:#0F3D2E,stroke:#0F3D2E,color:#ffffff
+    classDef accent fill:#ECFDF5,stroke:#10B981,color:#0F3D2E
+    classDef ext fill:#ffffff,stroke:#6B7280,color:#111111,stroke-dasharray: 5 4
+    class routers,services wo
+    class perception,kb,inference,expl,logic,nlu,search,csp,fao,hb accent
+    class om ext

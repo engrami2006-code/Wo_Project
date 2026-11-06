@@ -1,0 +1,1182 @@
+{
+ "recommendation": null,
+ "reason_en": "Insufficient data to generate a recommendation.",
+ "reason_ar": "لا توجد بيانات كافية لإعطاء توصية موثوقة.",
+ "supporting_facts": [
+  {
+   "symbol": "weather_available",
+   "value": false,
+   "used": true,
+   "derived": false,
+   "evidence": {
+    "status": "unavailable",
+    "snapshot_id": null
+   },
+   "description_en": "A valid weather snapshot exists for the farm.",
+   "description_ar": "توجد لقطة طقس صالحة للمزرعة."
+  },
+  {
+   "symbol": "drought_sensitive_crop",
+   "value": true,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "ky": 1.05,
+    "threshold": 1.0
+   },
+   "description_en": "Seasonal yield response factor Ky > 1 (FAO-33).",
+   "description_ar": "معامل استجابة الإنتاج للماء Ky أكبر من 1 (FAO-33)."
+  },
+  {
+   "symbol": "low_efficiency_method",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "efficiency": 0.9,
+    "threshold": 0.7
+   },
+   "description_en": "Irrigation efficiency is below the low-efficiency limit.",
+   "description_ar": "كفاءة الري أقل من حد الكفاءة المنخفضة."
+  },
+  {
+   "symbol": "not_yet_planted",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "The planting date is in the future.",
+   "description_ar": "تاريخ الزراعة في المستقبل."
+  },
+  {
+   "symbol": "season_ended",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "The growing season has ended.",
+   "description_ar": "انتهى موسم النمو."
+  },
+  {
+   "symbol": "stage_development",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "Crop is in the development stage.",
+   "description_ar": "المحصول في مرحلة النمو الخضري."
+  },
+  {
+   "symbol": "stage_initial",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "Crop is in the initial stage (FAO-56).",
+   "description_ar": "المحصول في المرحلة الأولية."
+  },
+  {
+   "symbol": "stage_late",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "Crop is in the late-season stage.",
+   "description_ar": "المحصول في مرحلة نهاية الموسم."
+  },
+  {
+   "symbol": "stage_mid",
+   "value": true,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "description_en": "Crop is in the mid-season stage (flowering / yield formation).",
+   "description_ar": "المحصول في منتصف الموسم (الإزهار وتكوين المحصول)."
+  },
+  {
+   "symbol": "weather_stale",
+   "value": false,
+   "used": false,
+   "derived": false,
+   "evidence": {
+    "reason": "no snapshot"
+   },
+   "description_en": "The latest snapshot is older than the staleness limit.",
+   "description_ar": "آخر لقطة طقس أقدم من حد الحداثة."
+  },
+  {
+   "symbol": "alert_weather_unavailable",
+   "value": true,
+   "used": false,
+   "derived": true,
+   "evidence": {
+    "derived_by": "R-ALR-001"
+   },
+   "description_en": "alert weather unavailable",
+   "description_ar": "alert weather unavailable"
+  }
+ ],
+ "triggered_rules": [
+  {
+   "code": "R-ALR-001",
+   "name_en": "Weather unavailable",
+   "name_ar": "الطقس غير متوفر",
+   "antecedent": "~weather_available",
+   "consequent": "alert_weather_unavailable",
+   "priority": 50,
+   "action_group": null,
+   "category": "alert",
+   "role": "alert",
+   "fired_order": 1,
+   "explanation_en": "No valid weather snapshot exists for this farm, and the provider could not be reached.",
+   "explanation_ar": "لا توجد لقطة طقس صالحة لهذه المزرعة، وتعذّر الوصول إلى مزود الطقس.",
+   "source": "WO policy"
+  }
+ ],
+ "advisories": [],
+ "alerts": [
+  {
+   "code": "R-ALR-001",
+   "symbol": "alert_weather_unavailable",
+   "severity": "warning",
+   "title_en": "Weather unavailable",
+   "title_ar": "الطقس غير متوفر",
+   "message_en": "No valid weather snapshot exists for this farm, and the provider could not be reached.",
+   "message_ar": "لا توجد لقطة طقس صالحة لهذه المزرعة، وتعذّر الوصول إلى مزود الطقس."
+  }
+ ],
+ "alternatives": [
+  {
+   "rule": "R-IRR-002",
+   "action": "action_full_irrigation",
+   "name_en": "Full irrigation",
+   "name_ar": "ري كامل",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "et_demand_positive",
+     "state": "unknown",
+     "description_en": "Crop evapotranspiration ETc is above zero.",
+     "description_ar": "التبخر-النتح للمحصول ETc أكبر من صفر.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "~rain_covers_demand",
+     "state": "unknown",
+     "description_en": "Effective rain covers the crop demand (P_eff ≥ ETc).",
+     "description_ar": "المطر الفعّال يغطي احتياج المحصول (P_eff ≥ ETc).",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "water_sufficient",
+     "state": "unknown",
+     "description_en": "Available water ≥ gross irrigation requirement.",
+     "description_ar": "الماء المتاح ≥ الاحتياج الإجمالي للري.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "gross requirement could not be calculated"
+    }
+   ],
+   "reason_en": "Not applicable: et_demand_positive is unknown; ~rain_covers_demand is unknown; water_sufficient is unknown",
+   "reason_ar": "غير منطبقة: et_demand_positive غير معروف؛ ~rain_covers_demand غير معروف؛ water_sufficient غير معروف"
+  },
+  {
+   "rule": "R-IRR-003",
+   "action": "action_deficit_irrigation",
+   "name_en": "Deficit irrigation",
+   "name_ar": "ري ناقص (مُرشّد)",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "et_demand_positive",
+     "state": "unknown",
+     "description_en": "Crop evapotranspiration ETc is above zero.",
+     "description_ar": "التبخر-النتح للمحصول ETc أكبر من صفر.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "~rain_covers_demand",
+     "state": "unknown",
+     "description_en": "Effective rain covers the crop demand (P_eff ≥ ETc).",
+     "description_ar": "المطر الفعّال يغطي احتياج المحصول (P_eff ≥ ETc).",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "water_limited",
+     "state": "unknown",
+     "description_en": "Available water < gross irrigation requirement.",
+     "description_ar": "الماء المتاح < الاحتياج الإجمالي للري.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "gross requirement could not be calculated"
+    },
+    {
+     "literal": "~water_critical",
+     "state": "unknown",
+     "description_en": "Available water < critical ratio × gross requirement.",
+     "description_ar": "الماء المتاح < النسبة الحرجة × الاحتياج الإجمالي.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "gross requirement could not be calculated"
+    }
+   ],
+   "reason_en": "Not applicable: et_demand_positive is unknown; ~rain_covers_demand is unknown; water_limited is unknown; ~water_critical is unknown",
+   "reason_ar": "غير منطبقة: et_demand_positive غير معروف؛ ~rain_covers_demand غير معروف؛ water_limited غير معروف؛ ~water_critical غير معروف"
+  },
+  {
+   "rule": "R-IRR-004",
+   "action": "action_critical_supply",
+   "name_en": "Critical water shortage",
+   "name_ar": "نقص حرج في المياه",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "et_demand_positive",
+     "state": "unknown",
+     "description_en": "Crop evapotranspiration ETc is above zero.",
+     "description_ar": "التبخر-النتح للمحصول ETc أكبر من صفر.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "~rain_covers_demand",
+     "state": "unknown",
+     "description_en": "Effective rain covers the crop demand (P_eff ≥ ETc).",
+     "description_ar": "المطر الفعّال يغطي احتياج المحصول (P_eff ≥ ETc).",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "water_critical",
+     "state": "unknown",
+     "description_en": "Available water < critical ratio × gross requirement.",
+     "description_ar": "الماء المتاح < النسبة الحرجة × الاحتياج الإجمالي.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "gross requirement could not be calculated"
+    }
+   ],
+   "reason_en": "Not applicable: et_demand_positive is unknown; ~rain_covers_demand is unknown; water_critical is unknown",
+   "reason_ar": "غير منطبقة: et_demand_positive غير معروف؛ ~rain_covers_demand غير معروف؛ water_critical غير معروف"
+  },
+  {
+   "rule": "R-IRR-005",
+   "action": "action_postpone_irrigation",
+   "name_en": "Postpone: rain covers demand",
+   "name_ar": "تأجيل: المطر يغطي الاحتياج",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "et_demand_positive",
+     "state": "unknown",
+     "description_en": "Crop evapotranspiration ETc is above zero.",
+     "description_ar": "التبخر-النتح للمحصول ETc أكبر من صفر.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    },
+    {
+     "literal": "rain_covers_demand",
+     "state": "unknown",
+     "description_en": "Effective rain covers the crop demand (P_eff ≥ ETc).",
+     "description_ar": "المطر الفعّال يغطي احتياج المحصول (P_eff ≥ ETc).",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    }
+   ],
+   "reason_en": "Not applicable: et_demand_positive is unknown; rain_covers_demand is unknown",
+   "reason_ar": "غير منطبقة: et_demand_positive غير معروف؛ rain_covers_demand غير معروف"
+  },
+  {
+   "rule": "R-IRR-006",
+   "action": "action_no_irrigation",
+   "name_en": "No irrigation: season ended",
+   "name_ar": "لا ري: انتهى الموسم",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "season_ended",
+     "state": "false",
+     "description_en": "The growing season has ended.",
+     "description_ar": "انتهى موسم النمو.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": null
+    }
+   ],
+   "reason_en": "Not applicable: season_ended is false",
+   "reason_ar": "غير منطبقة: season_ended غير متحقق"
+  },
+  {
+   "rule": "R-IRR-007",
+   "action": "action_no_irrigation",
+   "name_en": "No irrigation: not yet planted",
+   "name_ar": "لا ري: لم تتم الزراعة بعد",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "not_yet_planted",
+     "state": "false",
+     "description_en": "The planting date is in the future.",
+     "description_ar": "تاريخ الزراعة في المستقبل.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": null
+    }
+   ],
+   "reason_en": "Not applicable: not_yet_planted is false",
+   "reason_ar": "غير منطبقة: not_yet_planted غير متحقق"
+  },
+  {
+   "rule": "R-IRR-013",
+   "action": "action_no_irrigation",
+   "name_en": "No irrigation: no evaporative demand",
+   "name_ar": "لا ري: لا يوجد طلب تبخري",
+   "status": "not_fired",
+   "blocking": [
+    {
+     "literal": "~et_demand_positive",
+     "state": "unknown",
+     "description_en": "Crop evapotranspiration ETc is above zero.",
+     "description_ar": "التبخر-النتح للمحصول ETc أكبر من صفر.",
+     "flip_en": null,
+     "flip_ar": null,
+     "reason": "ET0 not available (weather unavailable and no manual ET0)"
+    }
+   ],
+   "reason_en": "Not applicable: ~et_demand_positive is unknown",
+   "reason_ar": "غير منطبقة: ~et_demand_positive غير معروف"
+  }
+ ],
+ "what_could_change": [],
+ "missing_data": [
+  {
+   "symbol": "et_demand_positive",
+   "fields": [
+    "et0"
+   ],
+   "hints": [
+    {
+     "en": "Reference evapotranspiration (weather data or a manual ET0 value)",
+     "ar": "التبخر-النتح المرجعي (بيانات الطقس أو قيمة ET0 يدوية)"
+    }
+   ],
+   "reason": "ET0 not available (weather unavailable and no manual ET0)"
+  },
+  {
+   "symbol": "rain_covers_demand",
+   "fields": [
+    "et0",
+    "precipitation"
+   ],
+   "hints": [
+    {
+     "en": "Precipitation forecast (weather data or a manual value)",
+     "ar": "توقع الهطول (بيانات الطقس أو قيمة يدوية)"
+    }
+   ],
+   "reason": "ET0 not available (weather unavailable and no manual ET0)"
+  },
+  {
+   "symbol": "water_sufficient",
+   "fields": [
+    "et0",
+    "precipitation"
+   ],
+   "hints": [],
+   "reason": "gross requirement could not be calculated"
+  },
+  {
+   "symbol": "water_limited",
+   "fields": [
+    "et0",
+    "precipitation"
+   ],
+   "hints": [],
+   "reason": "gross requirement could not be calculated"
+  },
+  {
+   "symbol": "water_critical",
+   "fields": [
+    "et0",
+    "precipitation"
+   ],
+   "hints": [],
+   "reason": "gross requirement could not be calculated"
+  }
+ ],
+ "calculation": {
+  "inputs": {
+   "et0_mm": null,
+   "et0_source": null,
+   "precipitation_mm": null,
+   "precipitation_source": null,
+   "area_m2": 1000.0,
+   "efficiency": 0.9,
+   "efficiency_source": "Drip default (FAO Irrigation Water Management Training Manual No. 4, Annex I, Table 8)",
+   "planting_date": "2026-07-15",
+   "target_date": "2026-10-03",
+   "available_water_l": 3000.0,
+   "available_water_source": "farm daily allowance",
+   "rh_min": null,
+   "wind_mean_10m": null
+  },
+  "parameters": {
+   "kc_ini": 0.6,
+   "kc_mid": 1.15,
+   "kc_end": 0.8,
+   "stage_lengths": [
+    30,
+    40,
+    40,
+    25
+   ],
+   "max_height_m": 0.6,
+   "ky": 1.05,
+   "effective_rainfall_fraction": 0.8,
+   "critical_supply_ratio": 0.5
+  },
+  "method": "FAO-56 single crop coefficient",
+  "steps": [
+   {
+    "name": "Growth stage",
+    "formula": "days since planting vs FAO-56 stage lengths",
+    "values": {
+     "days": 80,
+     "L": [
+      30,
+      40,
+      40,
+      25
+     ],
+     "override": null,
+     "note": ""
+    },
+    "result": "mid",
+    "unit": "",
+    "reference": "FAO-56 Table 11"
+   },
+   {
+    "name": "Kc climatic adjustment",
+    "formula": "skipped",
+    "values": {
+     "reason": "RHmin, u2 or crop height not available; Table 12 values used"
+    },
+    "result": null,
+    "unit": "",
+    "reference": ""
+   },
+   {
+    "name": "Crop coefficient",
+    "formula": "Kc = Kc_mid",
+    "values": {
+     "stage": "mid",
+     "day_in_stage": 10,
+     "stage_length": 40,
+     "Kc_ini": 0.6,
+     "Kc_mid": 1.15,
+     "Kc_end": 0.8
+    },
+    "result": 1.15,
+    "unit": "",
+    "reference": "FAO-56 Eq. 66 / Table 12"
+   }
+  ],
+  "result": {
+   "kc": 1.15,
+   "kc_climate_adjusted": false
+  },
+  "id": null,
+  "weather_status": {
+   "status": "unavailable",
+   "age_hours": null,
+   "stale": false,
+   "message": "Weather data is currently unavailable (offline mode is enabled) and no snapshot is saved.",
+   "fetched_now": false,
+   "snapshot": null
+  }
+ },
+ "certainty": "insufficient_data",
+ "data_quality": "no_weather",
+ "kb_version": 1,
+ "trace": {
+  "engine": "forward_chaining (PL-FC-ENTAILS, agenda) + conflict resolution",
+  "agenda": [
+   "~weather_available",
+   "~weather_stale",
+   "~not_yet_planted",
+   "~stage_initial",
+   "~stage_development",
+   "stage_mid",
+   "~stage_late",
+   "~season_ended",
+   "drought_sensitive_crop",
+   "~low_efficiency_method",
+   "alert_weather_unavailable"
+  ],
+  "fired": [
+   {
+    "order": 1,
+    "code": "R-ALR-001",
+    "premises": [
+     "~weather_available"
+    ],
+    "conclusion": "alert_weather_unavailable"
+   }
+  ],
+  "conflict_resolution": [],
+  "blocked": [],
+  "backward_chaining": [
+   {
+    "goal": "irrigate_today",
+    "status": "unknown",
+    "missing": [
+     "et_demand_positive",
+     "rain_covers_demand",
+     "water_sufficient",
+     "water_limited",
+     "water_critical"
+    ],
+    "goals_expanded": 15,
+    "proof": {
+     "literal": "irrigate_today",
+     "status": "unknown",
+     "via_rule": null,
+     "reason": "depends on missing data",
+     "children": [
+      {
+       "literal": "R-IRR-008: action_full_irrigation => irrigate_today",
+       "status": "unknown",
+       "via_rule": "R-IRR-008",
+       "reason": "",
+       "children": [
+        {
+         "literal": "action_full_irrigation",
+         "status": "unknown",
+         "via_rule": null,
+         "reason": "depends on missing data",
+         "children": [
+          {
+           "literal": "R-IRR-002: irrigation_needed & water_sufficient => action_full_irrigation",
+           "status": "unknown",
+           "via_rule": "R-IRR-002",
+           "reason": "",
+           "children": [
+            {
+             "literal": "irrigation_needed",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "depends on missing data",
+             "children": [
+              {
+               "literal": "R-IRR-001: et_demand_positive & ~rain_covers_demand & ~season_ended & ~not_yet_planted => irrigation_needed",
+               "status": "unknown",
+               "via_rule": "R-IRR-001",
+               "reason": "",
+               "children": [
+                {
+                 "literal": "et_demand_positive",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~rain_covers_demand",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~season_ended",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                },
+                {
+                 "literal": "~not_yet_planted",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "literal": "water_sufficient",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "literal": "R-IRR-009: action_deficit_irrigation => irrigate_today",
+       "status": "unknown",
+       "via_rule": "R-IRR-009",
+       "reason": "",
+       "children": [
+        {
+         "literal": "action_deficit_irrigation",
+         "status": "unknown",
+         "via_rule": null,
+         "reason": "depends on missing data",
+         "children": [
+          {
+           "literal": "R-IRR-003: irrigation_needed & water_limited & ~water_critical => action_deficit_irrigation",
+           "status": "unknown",
+           "via_rule": "R-IRR-003",
+           "reason": "",
+           "children": [
+            {
+             "literal": "irrigation_needed",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "depends on missing data",
+             "children": [
+              {
+               "literal": "R-IRR-001: et_demand_positive & ~rain_covers_demand & ~season_ended & ~not_yet_planted => irrigation_needed",
+               "status": "unknown",
+               "via_rule": "R-IRR-001",
+               "reason": "",
+               "children": [
+                {
+                 "literal": "et_demand_positive",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~rain_covers_demand",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~season_ended",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                },
+                {
+                 "literal": "~not_yet_planted",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "literal": "water_limited",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            },
+            {
+             "literal": "~water_critical",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "literal": "R-IRR-010: action_critical_supply => irrigate_today",
+       "status": "unknown",
+       "via_rule": "R-IRR-010",
+       "reason": "",
+       "children": [
+        {
+         "literal": "action_critical_supply",
+         "status": "unknown",
+         "via_rule": null,
+         "reason": "depends on missing data",
+         "children": [
+          {
+           "literal": "R-IRR-004: irrigation_needed & water_critical => action_critical_supply",
+           "status": "unknown",
+           "via_rule": "R-IRR-004",
+           "reason": "",
+           "children": [
+            {
+             "literal": "irrigation_needed",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "depends on missing data",
+             "children": [
+              {
+               "literal": "R-IRR-001: et_demand_positive & ~rain_covers_demand & ~season_ended & ~not_yet_planted => irrigation_needed",
+               "status": "unknown",
+               "via_rule": "R-IRR-001",
+               "reason": "",
+               "children": [
+                {
+                 "literal": "et_demand_positive",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~rain_covers_demand",
+                 "status": "unknown",
+                 "via_rule": null,
+                 "reason": "percept not available (missing data)",
+                 "children": []
+                },
+                {
+                 "literal": "~season_ended",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                },
+                {
+                 "literal": "~not_yet_planted",
+                 "status": "proven",
+                 "via_rule": null,
+                 "reason": "known fact",
+                 "children": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "literal": "water_critical",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "goal": "skip_irrigation_today",
+    "status": "unknown",
+    "missing": [
+     "et_demand_positive",
+     "rain_covers_demand"
+    ],
+    "goals_expanded": 12,
+    "proof": {
+     "literal": "skip_irrigation_today",
+     "status": "unknown",
+     "via_rule": null,
+     "reason": "depends on missing data",
+     "children": [
+      {
+       "literal": "R-IRR-011: action_postpone_irrigation => skip_irrigation_today",
+       "status": "unknown",
+       "via_rule": "R-IRR-011",
+       "reason": "",
+       "children": [
+        {
+         "literal": "action_postpone_irrigation",
+         "status": "unknown",
+         "via_rule": null,
+         "reason": "depends on missing data",
+         "children": [
+          {
+           "literal": "R-IRR-005: et_demand_positive & rain_covers_demand & ~season_ended & ~not_yet_planted => action_postpone_irrigation",
+           "status": "unknown",
+           "via_rule": "R-IRR-005",
+           "reason": "",
+           "children": [
+            {
+             "literal": "et_demand_positive",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            },
+            {
+             "literal": "rain_covers_demand",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            },
+            {
+             "literal": "~season_ended",
+             "status": "proven",
+             "via_rule": null,
+             "reason": "known fact",
+             "children": []
+            },
+            {
+             "literal": "~not_yet_planted",
+             "status": "proven",
+             "via_rule": null,
+             "reason": "known fact",
+             "children": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "literal": "R-IRR-012: action_no_irrigation => skip_irrigation_today",
+       "status": "unknown",
+       "via_rule": "R-IRR-012",
+       "reason": "",
+       "children": [
+        {
+         "literal": "action_no_irrigation",
+         "status": "unknown",
+         "via_rule": null,
+         "reason": "depends on missing data",
+         "children": [
+          {
+           "literal": "R-IRR-006: season_ended => action_no_irrigation",
+           "status": "disproven",
+           "via_rule": "R-IRR-006",
+           "reason": "",
+           "children": [
+            {
+             "literal": "season_ended",
+             "status": "disproven",
+             "via_rule": null,
+             "reason": "known to be the opposite",
+             "children": []
+            }
+           ]
+          },
+          {
+           "literal": "R-IRR-007: not_yet_planted => action_no_irrigation",
+           "status": "disproven",
+           "via_rule": "R-IRR-007",
+           "reason": "",
+           "children": [
+            {
+             "literal": "not_yet_planted",
+             "status": "disproven",
+             "via_rule": null,
+             "reason": "known to be the opposite",
+             "children": []
+            }
+           ]
+          },
+          {
+           "literal": "R-IRR-013: ~et_demand_positive & ~season_ended & ~not_yet_planted => action_no_irrigation",
+           "status": "unknown",
+           "via_rule": "R-IRR-013",
+           "reason": "",
+           "children": [
+            {
+             "literal": "~et_demand_positive",
+             "status": "unknown",
+             "via_rule": null,
+             "reason": "percept not available (missing data)",
+             "children": []
+            },
+            {
+             "literal": "~season_ended",
+             "status": "proven",
+             "via_rule": null,
+             "reason": "known fact",
+             "children": []
+            },
+            {
+             "literal": "~not_yet_planted",
+             "status": "proven",
+             "via_rule": null,
+             "reason": "known fact",
+             "children": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "percepts": [
+  {
+   "symbol": "weather_available",
+   "value": false,
+   "evidence": {
+    "status": "unavailable",
+    "snapshot_id": null
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "weather_stale",
+   "value": false,
+   "evidence": {
+    "reason": "no snapshot"
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "not_yet_planted",
+   "value": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "stage_initial",
+   "value": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "stage_development",
+   "value": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "stage_mid",
+   "value": true,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "stage_late",
+   "value": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "season_ended",
+   "value": false,
+   "evidence": {
+    "days_since_planting": 80,
+    "stage": "mid",
+    "status": "in_season",
+    "note": ""
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "et_demand_positive",
+   "value": null,
+   "evidence": {
+    "reason": "ET0 not available (weather unavailable and no manual ET0)",
+    "missing_fields": [
+     "et0"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "rain_covers_demand",
+   "value": null,
+   "evidence": {
+    "reason": "ET0 not available (weather unavailable and no manual ET0)",
+    "missing_fields": [
+     "et0",
+     "precipitation"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "rain_expected",
+   "value": null,
+   "evidence": {
+    "reason": "precipitation forecast not available",
+    "missing_fields": [
+     "precipitation"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "high_evaporative_demand",
+   "value": null,
+   "evidence": {
+    "reason": "ET0 not available",
+    "missing_fields": [
+     "et0"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "water_sufficient",
+   "value": null,
+   "evidence": {
+    "reason": "gross requirement could not be calculated",
+    "missing_fields": [
+     "et0",
+     "precipitation"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "water_limited",
+   "value": null,
+   "evidence": {
+    "reason": "gross requirement could not be calculated",
+    "missing_fields": [
+     "et0",
+     "precipitation"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "water_critical",
+   "value": null,
+   "evidence": {
+    "reason": "gross requirement could not be calculated",
+    "missing_fields": [
+     "et0",
+     "precipitation"
+    ]
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "drought_sensitive_crop",
+   "value": true,
+   "evidence": {
+    "ky": 1.05,
+    "threshold": 1.0
+   },
+   "flip_en": null,
+   "flip_ar": null
+  },
+  {
+   "symbol": "low_efficiency_method",
+   "value": false,
+   "evidence": {
+    "efficiency": 0.9,
+    "threshold": 0.7
+   },
+   "flip_en": null,
+   "flip_ar": null
+  }
+ ],
+ "fired_codes": [
+  "R-ALR-001"
+ ],
+ "context": {
+  "farm_id": "b28dbdd5-4b4d-41b7-80b1-a8cbde0f8696",
+  "farm_name": "Wadi Farm",
+  "farm_crop_id": "a6cc9fb7-c375-408d-80e1-4cbd5690884c",
+  "crop_name_en": "Tomato",
+  "crop_name_ar": "طماطم",
+  "target_date": "2026-10-03",
+  "area_m2": 1000.0
+ }
+}

@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WO — Water Optimization</title>
+<meta name="description" content="WO — Water Optimization: a knowledge-based decision support system for agricultural water management. Course project, Introduction to Artificial Intelligence.">
+<style>
+/* ------------------------------------------------------------------ fonts (bundled, offline) */
+@font-face{font-family:"Plex";src:url("assets/fonts/ibm-plex-sans-latin-200-normal.woff2") format("woff2");font-weight:200;font-display:swap}
+@font-face{font-family:"Plex";src:url("assets/fonts/ibm-plex-sans-latin-300-normal.woff2") format("woff2");font-weight:300;font-display:swap}
+@font-face{font-family:"Plex";src:url("assets/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Plex";src:url("assets/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Plex";src:url("assets/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Plex Arabic";src:url("assets/fonts/ibm-plex-sans-arabic-arabic-300-normal.woff2") format("woff2");font-weight:200 300;font-display:swap}
+@font-face{font-family:"Plex Arabic";src:url("assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Plex Arabic";src:url("assets/fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Plex Arabic";src:url("assets/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Plex Mono";src:url("assets/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Plex Mono";src:url("assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+
+/* ------------------------------------------------------------------ tokens */
+:root{
+  --forest:#0F3D2E; --forest-deep:#0A2C21; --emerald:#10B981; --teal:#0D9488; --water:#0EA5E9;
+  --paper:#F5F8F6; --white:#FFFFFF; --ink:#10251D; --muted:#4F665B; --line:#D3E0D9; --soft:#E8F1EC;
+  --earth:#C2410C; --earth-soft:#FDF1EA;
+  --sans:"Plex","IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --arabic:"Plex Arabic","IBM Plex Sans Arabic","Plex","Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;
+  --mono:"Plex Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#06170F;overflow:hidden}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html[data-lang="ar"] body{font-family:var(--arabic)}
+html[data-lang="en"] .ar{display:none!important}
+html[data-lang="ar"] .en{display:none!important}
+.mono{font-family:var(--mono);letter-spacing:0}
+html[data-lang="ar"] .mono{direction:ltr;unicode-bidi:isolate}
+.ltr{direction:ltr;unicode-bidi:isolate}
+
+/* ------------------------------------------------------------------ stage */
+.viewport{position:fixed;inset:0;overflow:hidden}
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;display:none;overflow:hidden;background:var(--paper);
+  padding:96px 128px 120px}
+.slide.active{display:block}
+.slide.dark{background:var(--forest);color:var(--white)}
+.slide .foot{position:absolute;left:128px;right:128px;bottom:48px;display:flex;justify-content:space-between;align-items:baseline;
+  font-size:20px;color:var(--muted)}
+.slide.dark .foot{color:rgba(255,255,255,.62)}
+.foot .num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] div.ltr,html[dir="rtl"] p.ltr{text-align:right}
+.nb{white-space:nowrap}
+.notes{display:none}
+
+/* ------------------------------------------------------------------ type */
+h1,h2,h3{font-weight:500;letter-spacing:-.02em;line-height:1.08}
+h2{font-size:66px;max-width:1500px}
+h3{font-size:34px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+html[data-lang="ar"] h1,html[data-lang="ar"] h2,html[data-lang="ar"] h3{letter-spacing:0;line-height:1.3}
+p{font-size:28px;line-height:1.45}
+.lede{font-size:32px;line-height:1.45;color:var(--muted);max-width:1180px}
+.dark .lede{color:rgba(255,255,255,.78)}
+.small{font-size:22px;line-height:1.45;color:var(--muted)}
+.dark .small{color:rgba(255,255,255,.66)}
+.src{font-size:19px;line-height:1.45;color:var(--muted)}
+.src a{color:inherit;word-break:break-all;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.dark .src{color:rgba(255,255,255,.6)}
+html[data-lang="ar"] p,html[data-lang="ar"] .lede{line-height:1.65}
+
+/* ------------------------------------------------------------------ slide 1: hero */
+.hero{padding:0}
+.hero .art{position:absolute;inset:0;width:100%;height:100%}
+html[dir="rtl"] .hero .art{transform:scaleX(-1)}
+.hero .copy{position:absolute;top:150px;inset-inline-start:128px;width:980px}
+.hero .wordmark{font-size:280px;font-weight:200;letter-spacing:-.06em;line-height:.8;color:var(--white)}
+.hero .wordmark b{font-weight:600;color:var(--emerald)}
+.hero h1{font-size:76px;margin-top:56px;color:var(--white)}
+.hero .tag{font-size:36px;line-height:1.4;margin-top:24px;color:rgba(255,255,255,.82);max-width:860px}
+html[data-lang="ar"] .hero .tag{line-height:1.7}
+.hero .course{position:absolute;bottom:72px;inset-inline-start:128px;font-size:24px;line-height:1.6;color:rgba(255,255,255,.7)}
+.hero .course strong{display:block;font-weight:500;color:var(--white)}
+
+/* ------------------------------------------------------------------ slide 2: challenge */
+.challenge{display:grid;grid-template-columns:230px 1fr;gap:150px;margin-top:40px;height:650px}
+.column{position:relative;height:600px;width:230px}
+.column .tube{position:absolute;inset:0;border:3px solid var(--forest);border-radius:115px 115px 24px 24px;overflow:hidden;background:var(--white)}
+.column .fill{position:absolute;left:0;right:0;bottom:0;height:71%;background:linear-gradient(180deg,#38BDF8 0%,var(--water) 40%,#0284C7 100%)}
+.column .fill::before{content:"";position:absolute;left:-10%;right:-10%;top:-14px;height:28px;border-radius:50%;background:#7DD3FC;opacity:.8}
+.column .tick{position:absolute;inset-inline-start:calc(100% + 52px);font-size:20px;color:var(--muted);white-space:nowrap;transform:translateY(-50%)}
+.column .tick::before{content:"";position:absolute;inset-inline-end:calc(100% + 10px);top:50%;width:30px;border-top:2px solid var(--muted)}
+.bignum{font-weight:200;letter-spacing:-.05em;line-height:.85;color:var(--forest)}
+.stat-main .bignum{font-size:190px}
+.stat-main p{font-size:30px;max-width:1240px;margin-top:14px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px 64px;margin-top:30px;border-top:2px solid var(--line);padding-top:26px}
+.stat-grid .n{font-size:52px;font-weight:300;letter-spacing:-.03em;color:var(--forest);line-height:1}
+.stat-grid .n small{font-size:30px;letter-spacing:0;margin-inline-start:6px;color:var(--teal);font-weight:400}
+.stat-grid p{font-size:22px;line-height:1.4;margin-top:8px;color:var(--ink)}
+html[data-lang="ar"] .stat-grid p{line-height:1.6}
+
+/* ------------------------------------------------------------------ pipelines (flip in RTL) */
+.flow{display:flex;align-items:stretch;gap:0}
+.flow .step{flex:1;position:relative;padding:30px 28px 28px;border-top:6px solid var(--emerald);background:var(--white)}
+.flow .step + .step{margin-inline-start:44px}
+.flow .step + .step::before{content:"";position:absolute;top:50%;inset-inline-start:-34px;width:24px;height:24px;
+  border-top:3px solid var(--forest);border-inline-end:3px solid var(--forest);transform:translateY(-50%) rotate(45deg)}
+html[dir="rtl"] .flow .step + .step::before{transform:translateY(-50%) rotate(-45deg)}
+.flow .step h3{font-size:30px}
+.flow .step p{font-size:22px;line-height:1.45;margin-top:12px;color:var(--muted)}
+html[data-lang="ar"] .flow .step p{line-height:1.6}
+.flow .step .k{font-size:20px;color:var(--teal);font-weight:500;margin-bottom:10px}
+
+/* ------------------------------------------------------------------ slide 3 */
+.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:56px;margin-top:72px}
+.principles div{border-inline-start:4px solid var(--forest);padding-inline-start:28px}
+.principles h3{font-size:30px}
+.principles p{font-size:23px;color:var(--muted);margin-top:10px}
+
+/* ------------------------------------------------------------------ slide 4: objectives */
+.objectives{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:0;margin-top:64px;border-top:2px solid var(--forest)}
+.objectives > div{padding:40px 40px 40px 0;border-bottom:1px solid var(--line);min-height:300px}
+html[dir="rtl"] .objectives > div{padding:40px 0 40px 40px}
+.objectives > div + div{}
+.objectives svg{width:56px;height:56px;stroke:var(--teal);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.objectives h3{margin-top:22px;font-size:32px}
+.objectives p{font-size:23px;color:var(--muted);margin-top:12px;max-width:470px}
+
+/* ------------------------------------------------------------------ slide 5: overview */
+.overview{display:grid;grid-template-columns:560px 1fr;gap:88px;margin-top:48px}
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;align-content:start}
+.counts > div{padding:34px 0;border-bottom:1px solid var(--line)}
+.counts .n{font-size:132px;font-weight:200;letter-spacing:-.04em;line-height:1;color:var(--forest)}
+.counts p{font-size:24px;color:var(--muted);margin-top:6px}
+.modules{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 40px;align-content:start}
+.modules > div{display:grid;grid-template-columns:52px 1fr;gap:18px;align-items:start;padding:26px 0}
+.modules svg{width:44px;height:44px;stroke:var(--forest);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.modules h3{font-size:26px}
+.modules p{font-size:20px;color:var(--muted);margin-top:2px;line-height:1.4}
+.modules > .core{grid-column:1 / -1;background:var(--forest);color:var(--white);padding:24px 28px;grid-template-columns:52px 1fr;margin-bottom:14px}
+.modules .core svg{stroke:var(--emerald)}
+.modules .core p{color:rgba(255,255,255,.75)}
+
+/* ------------------------------------------------------------------ slide 6: architecture */
+.arch{display:grid;grid-template-columns:1fr 360px;gap:56px;margin-top:48px}
+.layer{display:flex;align-items:center;gap:28px;padding:22px 30px;background:var(--white);border:2px solid var(--line);margin-bottom:16px;position:relative}
+.layer .lbl{width:230px;flex:none;font-size:24px;font-weight:600;color:var(--forest)}
+.layer .body{font-size:22px;color:var(--muted);line-height:1.4}
+.layer.api{border-color:var(--forest)}
+.layer.core{background:var(--soft);border-color:var(--emerald)}
+.layer.db{background:var(--forest);border-color:var(--forest)}
+.layer.db .lbl,.layer.db .body{color:var(--white)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{font-size:19px;padding:6px 14px;background:var(--white);border:1.5px solid var(--emerald);color:var(--forest);border-radius:999px}
+.layer.db .chip{background:transparent;border-color:rgba(255,255,255,.5);color:var(--white)}
+.down{height:20px;display:flex;justify-content:center;margin:-8px 0 8px}
+.down::after{content:"";width:3px;height:20px;background:var(--forest)}
+.side{border-inline-start:3px solid var(--forest);padding-inline-start:32px}
+.side h3{font-size:28px}
+.side p{font-size:22px;color:var(--muted);margin-top:8px;line-height:1.45}
+.side .blk + .blk{margin-top:30px}
+.ext{border:2px dashed var(--muted);padding:18px 22px;margin-top:30px}
+
+/* ------------------------------------------------------------------ slide 7: FAO-56 */
+.fao{margin-top:60px}
+.fao .flow .step{padding:28px 22px 26px}
+.fao .flow .step + .step{margin-inline-start:34px}
+.fao .flow .step + .step::before{inset-inline-start:-28px;width:20px;height:20px}
+.fao .eq{font-family:var(--mono);font-size:18px;color:var(--forest);margin-top:12px;line-height:1.4;direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] .fao .eq{text-align:right}
+.fao .val{font-size:44px;font-weight:300;letter-spacing:-.02em;color:var(--forest);margin-top:20px;line-height:1}
+.fao .val small{font-size:22px;color:var(--teal);letter-spacing:0;margin-inline-start:6px}
+.fao .lab{font-size:19px;color:var(--muted);margin-top:8px;line-height:1.35}
+.effs{display:flex;gap:64px;margin-top:56px;align-items:flex-end}
+.eff{display:flex;align-items:flex-end;gap:16px}
+.eff .bar{width:46px;background:var(--water);border-radius:4px 4px 0 0}
+.eff .n{font-size:54px;font-weight:300;line-height:1;color:var(--forest)}
+.eff .t{font-size:21px;color:var(--muted)}
+
+/* ------------------------------------------------------------------ slide 8: hydroponics */
+.balance-eq{font-size:46px;font-weight:300;letter-spacing:-.01em;margin-top:40px;color:var(--forest);direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] .balance-eq{text-align:right}
+.balance-eq b{font-weight:500}
+.hydro{display:grid;grid-template-columns:1060px 1fr;gap:64px;margin-top:40px}
+.hydro svg text{font-family:var(--sans)}
+html[data-lang="ar"] .hydro svg text{font-family:var(--arabic)}
+.hstats{position:absolute;left:40px;top:396px;width:400px}
+.hstats p{font-size:22px;line-height:1.6;color:var(--muted)}
+.hstats .cap{font-size:17px;margin-top:10px;line-height:1.4}
+.hydro .facts div{padding:20px 0;border-bottom:1px solid var(--line)}
+.hydro .facts h3{font-size:28px}
+.hydro .facts p{font-size:22px;color:var(--muted);margin-top:6px;line-height:1.45}
+.code{font-family:var(--mono);font-size:.92em;color:var(--forest);background:var(--soft);padding:1px 8px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+.dark .code{background:rgba(255,255,255,.1);color:#A7F3D0}
+
+/* ------------------------------------------------------------------ slide 9: weather */
+.weather{display:grid;grid-template-columns:760px 1fr;gap:72px;margin-top:52px}
+.ladder > .row{display:grid;grid-template-columns:130px 1fr;gap:28px;padding:22px 0;border-bottom:1px solid var(--line)}
+.ladder .state{font-size:26px;font-weight:600;padding:8px 0;text-align:center;border-radius:6px;align-self:start}
+.ladder .s1{background:var(--emerald);color:var(--white)}
+.ladder .s2{background:#BAE6FD;color:#075985}
+.ladder .s3{background:var(--white);color:var(--ink);border:2px solid var(--muted)}
+.ladder h3{font-size:28px}
+.ladder p{font-size:22px;color:var(--muted);margin-top:6px;line-height:1.45}
+.shot{background:var(--white);border:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(15,61,46,.35);border-radius:14px;overflow:hidden}
+.shot img{display:block;width:100%;height:auto}
+.note{margin-top:28px;padding:18px 24px;border-inline-start:5px solid var(--water);background:#EAF6FD;font-size:22px;line-height:1.45;color:#075985}
+
+/* ------------------------------------------------------------------ slide 10: KB AI (dark) */
+.kb{display:grid;grid-template-columns:820px 1fr;gap:72px;margin-top:40px}
+.kb svg text{font-family:var(--sans);fill:var(--white)}
+html[data-lang="ar"] .kb svg text{font-family:var(--arabic)}
+.kbstats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:28px}
+.kbstats .n{font-size:84px;font-weight:200;letter-spacing:-.04em;line-height:1;color:var(--emerald)}
+.kbstats p{font-size:21px;color:rgba(255,255,255,.75);margin-top:8px;line-height:1.35}
+.kbpoints div{padding:22px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+.kbpoints h3{font-size:28px;color:var(--white)}
+.kbpoints p{font-size:22px;color:rgba(255,255,255,.74);margin-top:6px;line-height:1.45}
+
+/* ------------------------------------------------------------------ slide 11: chatbot */
+.chat{display:grid;grid-template-columns:1000px 1fr;gap:64px;margin-top:44px}
+.steps{counter-reset:s;list-style:none}
+.steps li{counter-increment:s;display:grid;grid-template-columns:52px 1fr;gap:18px;padding:12px 0;border-bottom:1px solid var(--line)}
+.steps li::before{content:counter(s);width:44px;height:44px;border-radius:50%;background:var(--forest);color:var(--white);
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500}
+.steps h3{font-size:25px}
+.steps p{font-size:20px;color:var(--muted);margin-top:2px;line-height:1.4}
+.example{margin-top:18px;padding:16px 22px;background:var(--white);border:2px solid var(--emerald)}
+.example .q{font-family:var(--arabic);font-size:28px;direction:rtl;text-align:right;color:var(--forest)}
+.example .r{font-size:19px;color:var(--muted);margin-top:10px;direction:ltr;text-align:left;line-height:1.5}
+.example .r bdi{font-family:var(--arabic);color:var(--forest)}
+html[dir="rtl"] .example .r{direction:rtl;text-align:right}
+html[dir="rtl"] .example .r .mono{display:inline-block;direction:ltr}
+
+/* ------------------------------------------------------------------ slide 12: land */
+.land{display:grid;grid-template-columns:600px 1fr;gap:80px;margin-top:48px}
+.grid20{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.grid20 span{aspect-ratio:1;border-radius:8px}
+.u-t{background:var(--emerald)} .u-o{background:var(--teal)} .u-w{background:var(--water)}
+.u-f{background:repeating-linear-gradient(45deg,var(--white) 0 8px,var(--soft) 8px 16px);border:2px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:12px 28px;margin-top:24px;font-size:21px;color:var(--ink)}
+.legend i{display:inline-block;width:20px;height:20px;border-radius:4px;vertical-align:-3px;margin-inline-end:8px}
+table{border-collapse:collapse;width:100%}
+.cmp th,.cmp td{font-size:24px;padding:16px 18px;text-align:start;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.cmp th{font-size:19px;font-weight:500;color:var(--muted);border-bottom:2px solid var(--forest)}
+.cmp td.num{text-align:end}
+.cmp tr.best td{background:var(--soft);font-weight:600;color:var(--forest)}
+.badge{display:inline-block;font-size:18px;padding:3px 12px;border-radius:999px;border:1.5px solid var(--emerald);color:var(--forest);font-weight:500}
+.badge.no{border-color:var(--line);color:var(--muted);font-weight:400}
+
+/* ------------------------------------------------------------------ slide 13: dashboard */
+.dash{position:relative;margin-top:40px;height:760px}
+.dash .browser{position:absolute;inset-inline-start:0;top:0;width:1120px}
+.dash .phone{position:absolute;inset-inline-start:1000px;top:120px;width:300px;border-radius:36px;border:10px solid var(--forest);overflow:hidden;box-shadow:0 30px 60px -20px rgba(15,61,46,.45);background:var(--white)}
+.dash .phone img{display:block;width:100%}
+.dash .callouts{position:absolute;inset-inline-end:0;top:0;width:300px}
+.dash .callouts div{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.dash .callouts h3{font-size:24px}
+.dash .callouts p{font-size:19px;color:var(--muted);margin-top:6px;line-height:1.4}
+.chrome-bar{height:44px;background:#E7EEEA;display:flex;align-items:center;gap:10px;padding-inline-start:18px}
+.chrome-bar i{width:14px;height:14px;border-radius:50%;background:#C9D6CF}
+
+/* ------------------------------------------------------------------ slide 14: evidence */
+.claim{margin-top:40px;padding:28px 36px;border-inline-start:8px solid var(--earth);background:var(--earth-soft);max-width:1480px}
+.claim p{font-size:34px;line-height:1.4;color:#7C2D12;font-weight:500}
+.quad{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:56px;border-top:2px solid var(--forest)}
+.quad > div{padding:32px 32px 0 0}
+html[dir="rtl"] .quad > div{padding:32px 0 0 32px}
+.quad > div + div{border-inline-start:1px solid var(--line);padding-inline-start:32px}
+.quad .ix{font-size:20px;color:var(--teal);font-weight:500}
+.quad h3{font-size:32px;margin-top:10px}
+.quad .f{font-family:var(--mono);font-size:20px;color:var(--forest);margin-top:16px;line-height:1.45;direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] .quad .f{text-align:right}
+.quad p{font-size:22px;color:var(--muted);margin-top:14px;line-height:1.45}
+.quad .warn{color:var(--earth)}
+
+/* ------------------------------------------------------------------ slide 15: security */
+.sec{display:grid;grid-template-columns:1040px 1fr;gap:72px;margin-top:44px}
+.roles th,.roles td{font-size:21px;padding:13px 12px;border-bottom:1px solid var(--line);text-align:center}
+.roles th{font-size:18px;font-weight:500;color:var(--muted);border-bottom:2px solid var(--forest);vertical-align:bottom}
+.roles td:first-child,.roles th:first-child{text-align:start;color:var(--ink)}
+.roles .y{color:var(--emerald);font-weight:600;font-size:24px}
+.roles .n{color:#A3B5AC}
+.seclist div{padding:16px 0;border-bottom:1px solid var(--line)}
+.seclist h3{font-size:26px}
+.seclist p{font-size:21px;color:var(--muted);margin-top:4px;line-height:1.4}
+
+/* ------------------------------------------------------------------ slide 16: conclusion (dark) */
+.concl{display:grid;grid-template-columns:repeat(3,1fr);gap:64px;margin-top:64px}
+.concl h3{font-size:30px;color:var(--emerald)}
+.concl ul{list-style:none;margin-top:18px}
+.concl li{font-size:24px;line-height:1.45;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.88)}
+.thanks{position:absolute;bottom:120px;inset-inline-start:128px;font-size:88px;font-weight:200;letter-spacing:-.03em;color:var(--white)}
+html[data-lang="ar"] .thanks{letter-spacing:0}
+
+/* ------------------------------------------------------------------ chrome */
+.progress{position:fixed;left:0;right:0;top:0;height:5px;background:rgba(255,255,255,.08);z-index:20}
+.progress span{display:block;height:100%;width:0;background:var(--water);transition:width .25s ease}
+html[dir="rtl"] .progress span{margin-inline-start:0}
+.chrome{position:fixed;bottom:16px;inset-inline-end:16px;display:flex;gap:6px;align-items:center;z-index:20;
+  background:rgba(10,44,33,.86);padding:6px;border-radius:999px;color:#fff;font-family:var(--sans);transition:opacity .3s}
+.chrome.idle{opacity:.18}
+.chrome button{font:inherit;font-size:14px;color:#fff;background:transparent;border:0;border-radius:999px;padding:8px 12px;cursor:pointer;min-width:38px}
+.chrome button:hover{background:rgba(255,255,255,.12)}
+.chrome button:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+.chrome .count{font-size:14px;padding:0 10px;font-variant-numeric:tabular-nums;opacity:.85}
+.notes-panel{position:fixed;left:16px;right:16px;bottom:72px;max-height:34vh;overflow:auto;z-index:19;display:none;
+  background:rgba(6,23,15,.94);color:#E6F2EC;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:18px 22px;
+  font-size:17px;line-height:1.6}
+.notes-panel.open{display:block}
+.notes-panel strong{color:var(--emerald);font-weight:600;display:block;margin-bottom:6px}
+html[data-lang="ar"] .notes-panel{font-family:var(--arabic)}
+.clean .chrome,.clean .progress,.clean .notes-panel{display:none!important}
+@media (prefers-reduced-motion:reduce){.progress span{transition:none}}
+
+/* ------------------------------------------------------------------ print: one slide per page, 1920×1080 */
+@page{size:1920px 1080px;margin:0}
+@media print{
+  html,body{height:auto;overflow:visible;background:#fff}
+  .viewport{position:static;overflow:visible}
+  .stage{position:static;transform:none!important;width:1920px;height:auto}
+  .slide{display:block!important;position:relative;break-after:page;page-break-after:always}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .chrome,.progress,.notes-panel{display:none!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- =============================================================== 1 HERO -->
+<section class="slide dark hero" aria-label="1">
+  <svg class="art" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0A2C21"/><stop offset=".55" stop-color="#0F3D2E"/><stop offset="1" stop-color="#0D4A37"/>
+      </linearGradient>
+      <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#0F3D2E" stop-opacity="1"/><stop offset=".42" stop-color="#0F3D2E" stop-opacity=".92"/><stop offset=".72" stop-color="#0F3D2E" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="1920" height="1080" fill="url(#sky)"/>
+    <g stroke="#10B981" stroke-width="2" fill="none" opacity=".55">
+      <path d="M1460 330 L520 1080"/><path d="M1460 330 L700 1080"/><path d="M1460 330 L870 1080"/><path d="M1460 330 L1030 1080"/>
+      <path d="M1460 330 L1180 1080"/><path d="M1460 330 L1320 1080"/><path d="M1460 330 L1600 1080"/><path d="M1460 330 L1740 1080"/>
+      <path d="M1460 330 L1890 1080"/><path d="M1460 330 L2050 1080"/><path d="M1460 330 L2230 1080"/><path d="M1460 330 L2440 1080"/>
+    </g>
+    <g stroke="#10B981" stroke-width="1.2" fill="none" opacity=".28">
+      <path d="M980 715 H1940"/><path d="M800 860 H1940"/><path d="M1180 556 H1940"/><path d="M1320 443 H1940"/><path d="M1410 370 H1940"/>
+    </g>
+    <path d="M1460 330 L1460 1080" stroke="#0EA5E9" stroke-width="7" fill="none"/>
+    <path d="M1460 330 L1460 1080" stroke="#7DD3FC" stroke-width="2" fill="none" opacity=".9"/>
+    <circle cx="1460" cy="330" r="9" fill="#0EA5E9"/>
+    <rect width="1920" height="1080" fill="url(#fade)"/>
+  </svg>
+  <div class="copy">
+    <div class="wordmark ltr">W<b>O</b></div>
+    <h1><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></h1>
+    <p class="tag"><span class="en">Smart Water Management for Agriculture: a knowledge-based decision support system for irrigation, hydroponics and land planning.</span><span class="ar">إدارة ذكية لمياه الزراعة: نظام دعم قرار قائم على المعرفة للري والزراعة المائية وتخطيط الأراضي.</span></p>
+  </div>
+  <div class="course">
+    <strong><span class="en">Introduction to Artificial Intelligence — course project</span><span class="ar">مشروع مقرر مقدمة في الذكاء الاصطناعي</span></strong>
+    <span class="en">Reference text: Russell &amp; Norvig, Artificial Intelligence: A Modern Approach</span><span class="ar">المرجع: راسل ونورفيغ، «الذكاء الاصطناعي: نهج حديث»</span>
+  </div>
+  <aside class="notes">
+    <div class="en">WO is a decision support system for agricultural water. It is a course project for Introduction to AI, and every AI technique in it comes from the Russell &amp; Norvig textbook: a knowledge-based agent, propositional logic, search and constraint satisfaction. There is no machine learning and no generative AI.</div>
+    <div class="ar">WO نظام لدعم القرار في إدارة مياه الزراعة، وهو مشروع لمقرر مقدمة في الذكاء الاصطناعي. كل تقنية ذكاء اصطناعي فيه مأخوذة من كتاب راسل ونورفيغ: وكيل قائم على المعرفة، والمنطق القضوي، والبحث، ومسائل تحقيق القيود. لا يوجد تعلم آلي ولا ذكاء اصطناعي توليدي.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 2 CHALLENGE -->
+<section class="slide" aria-label="2">
+  <h2><span class="en">Agriculture accounts for most of the world's freshwater withdrawals</span><span class="ar">الزراعة تستحوذ على معظم سحب المياه العذبة في العالم</span></h2>
+  <div class="challenge">
+    <div class="column" aria-hidden="true">
+      <div class="tube"><div class="fill"></div></div>
+      <div class="tick" style="top:0">100%</div>
+      <div class="tick" style="top:29%">71%</div>
+      <div class="tick" style="top:100%">0</div>
+    </div>
+    <div>
+      <div class="stat-main">
+        <div class="bignum ltr">71%</div>
+        <p><span class="en">Agriculture accounted for 71 per cent of total freshwater withdrawals globally in 2022.</span><span class="ar">شكّلت الزراعة 71 في المئة من إجمالي سحب المياه العذبة عالميًا في عام 2022.</span></p>
+      </div>
+      <div class="stat-grid">
+        <div><div class="n ltr">23%</div><p><span class="en">of global cultivated land was equipped for irrigation (2022), up from 21.5 per cent in 2015.</span><span class="ar">من الأراضي المزروعة عالميًا كانت مجهزة للري (2022)، ارتفاعًا من 21.5 في المئة في 2015.</span></p></div>
+        <div><div class="n ltr">5,326<small><span class="en">m³</span><span class="ar">م³</span></small></div><p><span class="en">global renewable freshwater resources per capita, a 7 per cent decline since 2015.</span><span class="ar">موارد المياه العذبة المتجددة عالميًا للفرد، بانخفاض 7 في المئة منذ 2015.</span></p></div>
+        <div><div class="n ltr">18%</div><p><span class="en">global water stress in 2022; 733 million+ people live in countries with high or critical water stress.</span><span class="ar">الإجهاد المائي العالمي في 2022؛ ويعيش أكثر من 733 مليون شخص في بلدان ذات إجهاد مائي مرتفع أو حرج.</span></p></div>
+        <div><div class="n ltr">0.69<small><span class="en">USD/m³</span><span class="ar">دولار/م³</span></small></div><p><span class="en">agriculture's water-use efficiency (least efficient sector), improved 38 per cent 2015–2022.</span><span class="ar">كفاءة استخدام المياه في الزراعة (القطاع الأقل كفاءة)، وتحسنت بنسبة 38 في المئة بين 2015 و2022.</span></p></div>
+      </div>
+      <p class="src" style="margin-top:22px">
+    <span class="en">Source for all figures: FAO AQUASTAT Water Data Snapshot 2025 — FAO newsroom, </span><span class="ar">مصدر جميع الأرقام: منظمة الأغذية والزراعة، لقطة بيانات المياه AQUASTAT 2025 — غرفة أخبار الفاو، </span><a class="ltr" href="https://www.fao.org/newsroom/detail/renewable-water-availability-per-person-plunges-7-percent-in-a-decade-as-global-scarcity-deepens--fao-data-shows/en">fao.org/newsroom/detail/renewable-water-availability-per-person-plunges-7-percent-in-a-decade-as-global-scarcity-deepens--fao-data-shows/en</a>
+  </p>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">2 / 16</span></div>
+  <aside class="notes">
+    <div class="en">These five figures are all from FAO's AQUASTAT Water Data Snapshot 2025. Agriculture took 71 per cent of freshwater withdrawals in 2022, and it is the least efficient sector per cubic metre. These are global facts that motivate the project; they are not results of WO.</div>
+    <div class="ar">هذه الأرقام الخمسة كلها من لقطة بيانات المياه AQUASTAT 2025 الصادرة عن الفاو. استحوذت الزراعة على 71 في المئة من سحب المياه العذبة في 2022، وهي القطاع الأقل كفاءة لكل متر مكعب. هذه حقائق عالمية تحفّز المشروع، وليست نتائج لنظام WO.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 3 SOLUTION -->
+<section class="slide" aria-label="3">
+  <h2><span class="en">WO turns a farm's own data into explained water decisions</span><span class="ar">يحوّل WO بيانات المزرعة نفسها إلى قرارات مائية مشروحة</span></h2>
+  <div class="flow" style="margin-top:72px">
+    <div class="step"><div class="k"><span class="en">Your data</span><span class="ar">بياناتك</span></div><h3><span class="en">Plantings, records, weather</span><span class="ar">الزراعات والسجلات والطقس</span></h3><p><span class="en">Crops and planting dates, water use, hydroponic readings, a validated forecast.</span><span class="ar">المحاصيل وتواريخ الزراعة، واستهلاك المياه، وقراءات الزراعة المائية، وتوقعات طقس مُتحقَّق منها.</span></p></div>
+    <div class="step"><div class="k"><span class="en">Perception</span><span class="ar">الإدراك</span></div><h3><span class="en">Numbers become facts</span><span class="ar">الأرقام تصبح حقائق</span></h3><p><span class="en"><span class="nb">FAO-56</span> requirement, then percepts such as <span class="code">water_limited</span>: true, false or unknown.</span><span class="ar">حساب الاحتياج وفق <span class="nb">FAO-56</span>، ثم مدركات مثل <span class="code">water_limited</span>: صحيح أو خطأ أو غير معروف.</span></p></div>
+    <div class="step"><div class="k"><span class="en">Knowledge base</span><span class="ar">قاعدة المعرفة</span></div><h3><span class="en">39 rules, sourced values</span><span class="ar">39 قاعدة وقيم موثّقة المصدر</span></h3><p><span class="en">Horn rules, axioms and parameters stored in the database and editable by an admin.</span><span class="ar">قواعد هورن ومسلّمات ومعاملات محفوظة في قاعدة البيانات ويعدّلها المشرف.</span></p></div>
+    <div class="step"><div class="k"><span class="en">Inference</span><span class="ar">الاستدلال</span></div><h3><span class="en">Forward and backward chaining</span><span class="ar">تسلسل أمامي وخلفي</span></h3><p><span class="en">Events run forward chaining; questions run backward chaining and find missing data.</span><span class="ar">الأحداث تشغّل التسلسل الأمامي، والأسئلة تشغّل التسلسل الخلفي وتكتشف البيانات الناقصة.</span></p></div>
+    <div class="step" style="border-top-color:var(--water)"><div class="k"><span class="en">Decision</span><span class="ar">القرار</span></div><h3><span class="en">Recommendation + why</span><span class="ar">توصية + السبب</span></h3><p><span class="en">Facts used, rules fired, why not the alternatives, what could change it.</span><span class="ar">الحقائق المستخدمة، والقواعد المفعّلة، ولماذا لا البدائل، وما الذي قد يغيّر القرار.</span></p></div>
+  </div>
+  <div class="principles">
+    <div><h3><span class="en">No ML, no generative AI</span><span class="ar">لا تعلم آلي ولا ذكاء توليدي</span></h3><p><span class="en">Deterministic logic from the course textbook; the chatbot is pattern-based.</span><span class="ar">منطق حتمي من كتاب المقرر؛ والمساعد يعتمد على الأنماط.</span></p></div>
+    <div><h3><span class="en">No invented data</span><span class="ar">لا بيانات مختلقة</span></h3><p><span class="en">The workspace starts empty; only the knowledge base is pre-loaded, with sources.</span><span class="ar">مساحة العمل تبدأ فارغة؛ قاعدة المعرفة وحدها محمّلة مسبقًا مع مصادرها.</span></p></div>
+    <div><h3><span class="en">Honest about gaps</span><span class="ar">صراحة عند النقص</span></h3><p><span class="en">Missing input means "Insufficient data", with the list of what is needed.</span><span class="ar">نقص المدخلات يعني «لا توجد بيانات كافية» مع قائمة بما هو مطلوب.</span></p></div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">3 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The idea in one line: the farm's own data goes through a perception layer that turns numbers into propositional facts, a knowledge base of rules, and an inference engine. The output is never a bare number: it is a recommendation with its reasons, its alternatives and what would change it.</div>
+    <div class="ar">الفكرة باختصار: بيانات المزرعة نفسها تمر عبر طبقة إدراك تحوّل الأرقام إلى حقائق منطقية، ثم قاعدة معرفة من القواعد، ثم محرك استدلال. والناتج ليس رقمًا مجردًا أبدًا، بل توصية مع أسبابها وبدائلها وما قد يغيّرها.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 4 OBJECTIVES -->
+<section class="slide" aria-label="4">
+  <h2><span class="en">Six objectives, each one implemented and testable</span><span class="ar">ستة أهداف، كل منها منفَّذ وقابل للاختبار</span></h2>
+  <div class="objectives">
+    <div><svg viewBox="0 0 48 48"><path d="M24 6c8 10 12 17 12 23a12 12 0 0 1-24 0c0-6 4-13 12-23z"/><path d="M18 31h12M24 25v12"/></svg>
+      <h3><span class="en">Calculate the requirement</span><span class="ar">حساب الاحتياج المائي</span></h3><p><span class="en"><span class="nb">FAO-56</span> single crop coefficient per planting, with every step stored and shown.</span><span class="ar">معامل المحصول المفرد وفق <span class="nb">FAO-56</span> لكل زراعة، مع حفظ كل خطوة وعرضها.</span></p></div>
+    <div><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><path d="M17 24l5 5 9-10"/></svg>
+      <h3><span class="en">Recommend and explain</span><span class="ar">التوصية مع الشرح</span></h3><p><span class="en">A knowledge-based agent decides; every decision cites facts, rules and alternatives.</span><span class="ar">وكيل قائم على المعرفة يقرّر، وكل قرار يستشهد بالحقائق والقواعد والبدائل.</span></p></div>
+    <div><svg viewBox="0 0 48 48"><path d="M10 14h28v20a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"/><path d="M10 22h28M24 8v6"/></svg>
+      <h3><span class="en">Treat hydroponics as core</span><span class="ar">الزراعة المائية جزء أساسي</span></h3><p><span class="en">Measured water balance and per-system pH/EC ranges, never soil equations.</span><span class="ar">ميزان مائي مقاس ونطاقات pH/EC لكل نظام، وليس معادلات التربة.</span></p></div>
+    <div><svg viewBox="0 0 48 48"><path d="M14 32a8 8 0 1 1 3-15 10 10 0 0 1 19 4 6 6 0 0 1-1 11z"/><path d="M8 40L40 8"/></svg>
+      <h3><span class="en">Keep working offline</span><span class="ar">العمل دون اتصال</span></h3><p><span class="en">Saved weather snapshots or manual ET0; "unavailable" instead of guessed values.</span><span class="ar">لقطات طقس محفوظة أو ET0 يدوي؛ «غير متوفر» بدل قيم مخمّنة.</span></p></div>
+    <div><svg viewBox="0 0 48 48"><rect x="8" y="8" width="14" height="14"/><rect x="26" y="8" width="14" height="14"/><rect x="8" y="26" width="14" height="14"/><path d="M26 33h14M33 26v14"/></svg>
+      <h3><span class="en">Plan with search and CSP</span><span class="ar">التخطيط بالبحث وتحقيق القيود</span></h3><p><span class="en">A* land distribution with an admissible heuristic; irrigation slots by backtracking.</span><span class="ar">توزيع الأرض بخوارزمية A* مع دالة استدلالية مقبولة؛ وجدولة الري بالتراجع.</span></p></div>
+    <div><svg viewBox="0 0 48 48"><path d="M8 40V8M8 40h32"/><path d="M14 32l8-9 6 5 10-13"/></svg>
+      <h3><span class="en">Report with evidence</span><span class="ar">تقارير مبنية على الدليل</span></h3><p><span class="en">Calculated, actual, apparent and measured water kept apart; no assumed savings.</span><span class="ar">فصل الاحتياج المحسوب والاستهلاك الفعلي والوفر الظاهري والوفر المقاس؛ دون افتراض وفر.</span></p></div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">4 / 16</span></div>
+  <aside class="notes">
+    <div class="en">Each objective maps to code and to a page of the application. The traceability table in docs/traceability.md links every course concept to its module and UI page.</div>
+    <div class="ar">كل هدف يقابله كود وصفحة في التطبيق. جدول التتبع في docs/traceability.md يربط كل مفهوم من المقرر بالوحدة البرمجية وصفحة الواجهة.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 5 OVERVIEW -->
+<section class="slide" aria-label="5">
+  <h2><span class="en">One platform, one agent at the centre</span><span class="ar">منصة واحدة ووكيل واحد في المركز</span></h2>
+  <div class="overview">
+    <div class="counts">
+      <div><div class="n ltr">82</div><p><span class="en">REST API operations (FastAPI, OpenAPI)</span><span class="ar">عملية في واجهة REST البرمجية (FastAPI وOpenAPI)</span></p></div>
+      <div><div class="n ltr">26</div><p><span class="en">PostgreSQL tables, Alembic migrations</span><span class="ar">جدولًا في PostgreSQL مع ترحيلات Alembic</span></p></div>
+      <div><div class="n ltr">22</div><p><span class="en">React pages in Arabic and English (RTL)</span><span class="ar">صفحة React بالعربية والإنجليزية (مع RTL)</span></p></div>
+      <div><div class="n ltr">5</div><p><span class="en">roles with backend-enforced permissions</span><span class="ar">أدوار بصلاحيات تفرضها الواجهة الخلفية</span></p></div>
+    </div>
+    <div class="modules">
+      <div class="core"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="8"/><circle cx="24" cy="24" r="17"/><path d="M24 4v4M24 40v4M4 24h4M40 24h4"/></svg>
+        <div><h3><span class="en">Knowledge-based agent</span><span class="ar">الوكيل القائم على المعرفة</span></h3><p><span class="en">Perception, rules, forward/backward chaining, explanations, KB validation, Logic Lab</span><span class="ar">الإدراك والقواعد والتسلسل الأمامي والخلفي والشرح والتحقق من قاعدة المعرفة ومختبر المنطق</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M6 40h36M10 40V22l14-10 14 10v18"/><path d="M20 40V30h8v10"/></svg><div><h3><span class="en">Farms and plantings</span><span class="ar">المزارع والزراعات</span></h3><p><span class="en">32 <span class="nb">FAO-56</span> reference crops</span><span class="ar">32 محصولًا مرجعيًا من <span class="nb">FAO-56</span></span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M24 6c8 10 12 17 12 23a12 12 0 0 1-24 0c0-6 4-13 12-23z"/></svg><div><h3><span class="en">Water records and analytics</span><span class="ar">سجلات المياه والتحليلات</span></h3><p><span class="en">Totals, trends, anomalies, impact</span><span class="ar">الإجماليات والاتجاهات والحالات الشاذة والأثر</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M8 34c6-6 10-6 16 0s10 6 16 0M8 24c6-6 10-6 16 0s10 6 16 0"/></svg><div><h3><span class="en">Smart irrigation</span><span class="ar">الري الذكي</span></h3><p><span class="en">Explained recommendation, CSP schedule</span><span class="ar">توصية مشروحة وجدولة بتحقيق القيود</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M10 14h28v20a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"/><path d="M10 22h28"/></svg><div><h3><span class="en">Hydroponics</span><span class="ar">الزراعة المائية</span></h3><p><span class="en">Water balance, pH/EC, rules</span><span class="ar">الميزان المائي وpH/EC والقواعد</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M14 32a8 8 0 1 1 3-15 10 10 0 0 1 19 4 6 6 0 0 1-1 11z"/></svg><div><h3><span class="en">Weather</span><span class="ar">الطقس</span></h3><p><span class="en">Open-Meteo with offline fallback</span><span class="ar">Open-Meteo مع بديل دون اتصال</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M8 10h32v22H20l-8 7v-7H8z"/></svg><div><h3><span class="en">Assistant</span><span class="ar">المساعد</span></h3><p><span class="en">Deterministic Arabic/English chatbot</span><span class="ar">محادثة حتمية بالعربية والإنجليزية</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><rect x="8" y="8" width="14" height="14"/><rect x="26" y="8" width="14" height="14"/><rect x="8" y="26" width="14" height="14"/><rect x="26" y="26" width="14" height="14"/></svg><div><h3><span class="en">Land distribution</span><span class="ar">توزيع الأرض</span></h3><p><span class="en">A* with BFS/UCS/Greedy comparison</span><span class="ar">A* مع مقارنة BFS وUCS والجشع</span></p></div></div>
+      <div><svg viewBox="0 0 48 48"><path d="M24 6l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2z"/></svg><div><h3><span class="en">Alerts and recommendations</span><span class="ar">التنبيهات والتوصيات</span></h3><p><span class="en">Rule-based, deduplicated, with evidence</span><span class="ar">مبنية على القواعد، دون تكرار، مع الدليل</span></p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">5 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The counts are from the code: 82 operations in the OpenAPI document, 26 tables in the first migration, 22 page components. All modules feed the same knowledge-based agent, so irrigation, hydroponics, alerts and the chatbot reason in the same way.</div>
+    <div class="ar">الأعداد مأخوذة من الكود: 82 عملية في وثيقة OpenAPI، و26 جدولًا في الترحيل الأول، و22 مكوّن صفحة. كل الوحدات تغذّي الوكيل نفسه، لذا يستدل الري والزراعة المائية والتنبيهات والمساعد بالطريقة نفسها.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 6 ARCHITECTURE -->
+<section class="slide" aria-label="6">
+  <h2><span class="en">Thin routers, testable cores</span><span class="ar">موجّهات رفيعة ونواة قابلة للاختبار</span></h2>
+  <div class="arch">
+    <div>
+      <div class="layer"><div class="lbl"><span class="en">Browser</span><span class="ar">المتصفح</span></div><div class="body"><span class="en">React 18 + TypeScript, Vite, Tailwind, Recharts, TanStack Query — Arabic/English with full RTL</span><span class="ar">React 18 مع TypeScript وVite وTailwind وRecharts وTanStack Query — عربي وإنجليزي مع دعم كامل للاتجاه من اليمين لليسار</span></div></div>
+      <div class="down"></div>
+      <div class="layer"><div class="lbl">nginx</div><div class="body"><span class="en">Serves the bundle, proxies <span class="code">/api</span>, adds CSP and security headers</span><span class="ar">يقدّم الحزمة ويمرّر <span class="code">/api</span> ويضيف ترويسات الأمان وCSP</span></div></div>
+      <div class="down"></div>
+      <div class="layer api"><div class="lbl">FastAPI</div><div class="body"><span class="en">16 routers → services (logic, access control, audit) — JWT, Argon2id, error envelope</span><span class="ar">16 موجّهًا ← الخدمات (المنطق والتحكم في الوصول والتدقيق) — JWT وArgon2id وغلاف أخطاء موحّد</span></div></div>
+      <div class="down"></div>
+      <div class="layer core"><div class="lbl"><span class="en">Pure cores</span><span class="ar">النواة الخالصة</span></div><div class="chips"><span class="chip">ai/</span><span class="chip">logic/</span><span class="chip">inference/</span><span class="chip">perception/</span><span class="chip">optimization/</span><span class="chip">agronomy/</span><span class="chip">integrations/weather</span></div></div>
+      <div class="down"></div>
+      <div class="layer db"><div class="lbl">PostgreSQL 16</div><div class="chips"><span class="chip"><span class="en">26 tables</span><span class="ar">26 جدولًا</span></span><span class="chip"><span class="en">reference knowledge</span><span class="ar">المعرفة المرجعية</span></span><span class="chip"><span class="en">operational data (starts empty)</span><span class="ar">البيانات التشغيلية (تبدأ فارغة)</span></span></div></div>
+    </div>
+    <div class="side">
+      <div class="blk"><h3><span class="en">Routers</span><span class="ar">الموجّهات</span></h3><p><span class="en">Parse the request, call one service, return a schema.</span><span class="ar">تقرأ الطلب وتستدعي خدمة واحدة وتعيد مخططًا.</span></p></div>
+      <div class="blk"><h3><span class="en">Services</span><span class="ar">الخدمات</span></h3><p><span class="en">Load data, enforce roles and isolation, persist results and audit entries.</span><span class="ar">تحمّل البيانات وتفرض الأدوار والعزل وتحفظ النتائج وسجلات التدقيق.</span></p></div>
+      <div class="blk"><h3><span class="en">Cores</span><span class="ar">النواة</span></h3><p><span class="en">Plain functions: no database, no network — easy to test and demonstrate.</span><span class="ar">دوال بسيطة دون قاعدة بيانات أو شبكة — سهلة الاختبار والعرض.</span></p></div>
+      <div class="ext"><h3>Open-Meteo</h3><p class="small"><span class="en">Optional forecast source. The only outbound call.</span><span class="ar">مصدر توقعات اختياري، وهو الاتصال الخارجي الوحيد.</span></p></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">6 / 16</span></div>
+  <aside class="notes">
+    <div class="en">A request goes from the React app through nginx to a thin FastAPI router, which calls a service. Services do access control and persistence; the AI, search, CSP and FAO-56 code are pure functions that take values and return values. The UML diagrams in docs/uml show the same structure in more detail.</div>
+    <div class="ar">ينتقل الطلب من تطبيق React عبر nginx إلى موجّه FastAPI رفيع يستدعي خدمة. الخدمات تتولى التحكم في الوصول والحفظ، بينما كود الذكاء الاصطناعي والبحث وتحقيق القيود وFAO-56 دوال خالصة تأخذ قيمًا وتعيد قيمًا. مخططات UML في docs/uml تعرض البنية نفسها بتفصيل أكبر.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 7 SOIL / <span class="nb">FAO-56</span> -->
+<section class="slide" aria-label="7">
+  <h2><span class="en">Soil irrigation follows <span class="nb">FAO-56</span>, step by step</span><span class="ar">الري في التربة يتبع <span class="nb">FAO-56</span> خطوة بخطوة</span></h2>
+  <p class="lede" style="margin-top:20px"><span class="en">Worked example computed by WO's code with illustrative inputs: tomato, 44 days after planting, 500 m², drip, ET0 6.2 mm, rain 2 mm, RHmin 30 %, wind 3 m/s.</span><span class="ar">مثال محسوب بكود WO بمدخلات توضيحية: طماطم بعد 44 يومًا من الزراعة، 500 م²، ري بالتنقيط، ET0 = 6.2 مم، مطر 2 مم، رطوبة دنيا 30٪، رياح 3 م/ث.</span></p>
+  <div class="fao">
+    <div class="flow">
+      <div class="step"><div class="k">1</div><h3><span class="en">Growth stage</span><span class="ar">مرحلة النمو</span></h3><div class="eq">Table 11</div><div class="val" style="font-size:36px"><span class="en">Development</span><span class="ar">النمو الخضري</span></div><div class="lab"><span class="en">day 14 of 40</span><span class="ar">اليوم 14 من 40</span></div></div>
+      <div class="step"><div class="k">2</div><h3><span class="en">Crop coefficient</span><span class="ar">معامل المحصول</span></h3><div class="eq">Eq. 66 + Eq. 62</div><div class="val ltr">0.8076</div><div class="lab"><span class="en">Kc_mid adjusted 1.15 → 1.193</span><span class="ar">تعديل Kc_mid من 1.15 إلى 1.193</span></div></div>
+      <div class="step"><div class="k">3</div><h3><span class="en">Crop ET</span><span class="ar">تبخر-نتح المحصول</span></h3><div class="eq">ETc = Kc × ET0</div><div class="val ltr">5.007<small><span class="en">mm</span><span class="ar">مم</span></small></div><div class="lab">0.8076 × 6.2</div></div>
+      <div class="step"><div class="k">4</div><h3><span class="en">Effective rain</span><span class="ar">المطر الفعّال</span></h3><div class="eq">P_eff = 0.8 × P</div><div class="val ltr">1.600<small><span class="en">mm</span><span class="ar">مم</span></small></div><div class="lab">0.8 × 2.0</div></div>
+      <div class="step"><div class="k">5</div><h3><span class="en">Net requirement</span><span class="ar">الاحتياج الصافي</span></h3><div class="eq">NIR = max(0, ETc − P_eff)</div><div class="val ltr">3.407<small><span class="en">mm</span><span class="ar">مم</span></small></div><div class="lab"><span class="en">× 500 m² = 1,703.45 L</span><span class="ar">× 500 م² = 1,703.45 لتر</span></div></div>
+      <div class="step" style="border-top-color:var(--water)"><div class="k">6</div><h3><span class="en">Gross volume</span><span class="ar">الحجم الإجمالي</span></h3><div class="eq">V = net / efficiency</div><div class="val ltr">1,892.72<small><span class="en">L</span><span class="ar">لتر</span></small></div><div class="lab"><span class="en">drip efficiency 0.90</span><span class="ar">كفاءة التنقيط 0.90</span></div></div>
+    </div>
+  </div>
+  <div class="effs">
+    <div class="eff"><div class="bar" style="height:60px"></div><div><div class="n ltr">60%</div><div class="t"><span class="en">surface</span><span class="ar">سطحي</span></div></div></div>
+    <div class="eff"><div class="bar" style="height:75px"></div><div><div class="n ltr">75%</div><div class="t"><span class="en">sprinkler</span><span class="ar">رش</span></div></div></div>
+    <div class="eff"><div class="bar" style="height:90px"></div><div><div class="n ltr">90%</div><div class="t"><span class="en">drip</span><span class="ar">تنقيط</span></div></div></div>
+    <p class="small" style="max-width:820px"><span class="en">Default application efficiencies from FAO Irrigation Water Management Training Manual No. 4 (methodology, not WO results). Method: <span class="nb">FAO-56</span>, Allen et al. (1998), Tables 11–12; every coefficient in the knowledge base carries its source.</span><span class="ar">كفاءات الري الافتراضية من دليل الفاو التدريبي رقم 4 لإدارة مياه الري (منهجية وليست نتائج WO). الطريقة: <span class="nb">FAO-56</span>، ألن وآخرون (1998)، الجدولان 11 و12؛ ولكل معامل في قاعدة المعرفة مصدره.</span></p>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">7 / 16</span></div>
+  <aside class="notes">
+    <div class="en">This is the real calculation chain, with numbers produced by running fao56.py. The climatic adjustment of Kc uses FAO-56 Equation 62 with wind converted to 2 m by Equation 47; it is skipped and recorded as skipped when humidity or wind is missing. Every step is stored with the recommendation.</div>
+    <div class="ar">هذه سلسلة الحساب الحقيقية، والأرقام ناتجة عن تشغيل fao56.py. تعديل Kc حسب المناخ يستخدم المعادلة 62 من FAO-56 مع تحويل سرعة الرياح إلى ارتفاع 2 م بالمعادلة 47، ويُتخطّى ويُسجَّل أنه تُخطّي عند غياب الرطوبة أو الرياح. كل خطوة تُحفظ مع التوصية.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 8 HYDROPONICS -->
+<section class="slide" aria-label="8">
+  <h2><span class="en">Hydroponics is measured, not estimated</span><span class="ar">الزراعة المائية تُقاس ولا تُقدَّر</span></h2>
+  <div class="balance-eq en">Input = Consumed + Discharged + ΔStorage + Losses + <b>Unaccounted</b></div>
+  <div class="balance-eq ar" style="direction:rtl;font-family:var(--arabic)">المُدخل = المستهلك + المُصرَّف + تغيّر المخزون + الفاقد + <b>غير المحسوب</b></div>
+  <div class="hydro">
+    <div style="position:relative;width:1060px;height:560px">
+    <svg viewBox="0 0 1060 560" width="1060" height="560" role="img" aria-label="Water balance example" style="direction:ltr">
+      <defs><linearGradient id="hw" x1="0" x2="1"><stop offset="0" stop-color="#0EA5E9"/><stop offset="1" stop-color="#0D9488"/></linearGradient></defs>
+      <!-- recycled loop -->
+      <path d="M150 210 C150 60, 420 60, 420 200" fill="none" stroke="#10B981" stroke-width="10" stroke-dasharray="2 14" stroke-linecap="round"/>
+      <text x="285" y="58" text-anchor="middle" font-size="22" fill="#0F3D2E"><tspan class="en">recycled 300 L</tspan><tspan class="ar">مُعاد تدويره 300 لتر</tspan></text>
+      <!-- source box -->
+      <rect x="40" y="210" width="380" height="150" rx="10" fill="#0F3D2E"/>
+      <text x="230" y="270" text-anchor="middle" font-size="26" fill="#A7F3D0"><tspan class="en">Input (1 day)</tspan><tspan class="ar">المُدخل (يوم واحد)</tspan></text>
+      <text x="230" y="325" text-anchor="middle" font-size="52" font-weight="300" fill="#fff">120 L</text>
+      <!-- branches: widths proportional (1 L = 0.6 px) -->
+      <path d="M420 245 C 600 245, 620 110, 760 110" fill="none" stroke="url(#hw)" stroke-width="48"/>
+      <path d="M420 290 C 600 290, 620 230, 760 230" fill="none" stroke="#0EA5E9" stroke-width="12" opacity=".85"/>
+      <path d="M420 305 C 600 305, 620 330, 760 330" fill="none" stroke="#0EA5E9" stroke-width="6" opacity=".85"/>
+      <path d="M420 318 C 600 318, 620 420, 760 420" fill="none" stroke="#0EA5E9" stroke-width="3" opacity=".85"/>
+      <path d="M420 330 C 600 330, 620 510, 760 510" fill="none" stroke="#C2410C" stroke-width="3"/>
+      <g font-size="26" fill="#10251D">
+        <text x="780" y="104"><tspan class="en">Consumed</tspan><tspan class="ar">مستهلك</tspan></text><text x="780" y="136" font-size="30" font-weight="500" fill="#0F3D2E">80 L</text>
+        <text x="780" y="224"><tspan class="en">ΔStorage</tspan><tspan class="ar">تغيّر المخزون</tspan></text><text x="780" y="256" font-size="30" font-weight="500" fill="#0F3D2E">20 L</text>
+        <text x="780" y="324"><tspan class="en">Discharged</tspan><tspan class="ar">مُصرَّف</tspan></text><text x="780" y="356" font-size="30" font-weight="500" fill="#0F3D2E">10 L</text>
+        <text x="780" y="414"><tspan class="en">Losses (measured)</tspan><tspan class="ar">فاقد مقاس</tspan></text><text x="780" y="446" font-size="30" font-weight="500" fill="#0F3D2E">5 L</text>
+        <text x="780" y="504" fill="#C2410C"><tspan class="en">Unaccounted</tspan><tspan class="ar">غير محسوب</tspan></text><text x="780" y="536" font-size="30" font-weight="500" fill="#C2410C">5 L · 4.2%</text>
+      </g>
+    </svg>
+    <div class="hstats">
+      <p><span class="en">Recirculation 300 / (300 + 10) = 96.8 %</span><span class="ar">نسبة إعادة التدوير: 96.8٪</span></p>
+      <p><span class="en">0.6 L per plant per day (200 plants)</span><span class="ar">0.6 لتر لكل نبتة يوميًا (200 نبتة)</span></p>
+      <p><span class="en">6.0 L per m² per day (20 m²)</span><span class="ar">6.0 لتر لكل م² يوميًا (20 م²)</span></p>
+      <p class="cap"><span class="en">Illustrative record, computed with hydro_balance.compute_balance</span><span class="ar">سجل توضيحي محسوب بالدالة <span class="ltr">hydro_balance.compute_balance</span></span></p>
+    </div>
+    </div>
+    <div class="facts">
+      <div><h3><span class="en">Missing terms are reported</span><span class="ar">الحدود الناقصة يُبلَّغ عنها</span></h3><p><span class="en">Unaccounted water is computed only when consumed, discharged and both reservoir levels are recorded.</span><span class="ar">يُحسب الماء غير المحسوب فقط عند تسجيل المستهلك والمصرّف ومستويي الخزان.</span></p></div>
+      <div><h3><span class="en">Ranges are configured per system</span><span class="ar">النطاقات تُحدَّد لكل نظام</span></h3><p><span class="en">pH 7.2 above a configured 6.5 fires <span class="code">R-HYD-002</span> and advice <span class="code">R-HYD-010</span>. No range configured: no alert, "range not configured".</span><span class="ar">pH = 7.2 فوق حد 6.5 المحدد يفعّل <span class="code">R-HYD-002</span> والنصيحة <span class="code">R-HYD-010</span>. دون نطاق محدد: لا تنبيه، و«النطاق غير محدد».</span></p></div>
+      <div><h3><span class="en">Reference profile with source</span><span class="ar">ملف مرجعي مع مصدره</span></h3><p><span class="en">Lettuce: pH 5.6–6.0, EC 1.15–1.25 mS/cm (Cornell CEA Hydroponic Lettuce Handbook).</span><span class="ar">الخس: pH من 5.6 إلى 6.0 وEC من 1.15 إلى 1.25 ملي سيمنز/سم (دليل كورنيل للخس المائي).</span></p></div>
+      <div><h3><span class="en">8 system types</span><span class="ar">8 أنواع أنظمة</span></h3><p class="ltr" style="font-size:21px">NFT · DWC · Ebb &amp; flow · Drip · Wick · Aeroponics · Raft · Substrate</p></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">8 / 16</span></div>
+  <aside class="notes">
+    <div class="en">Hydroponic systems never use the soil ET equations. Each record is a measured balance. If a term is missing, WO lists it instead of assuming zero. The pH and EC limits come from the system's own configuration, optionally copied from a sourced reference profile.</div>
+    <div class="ar">لا تُستخدم معادلات التبخر-النتح الخاصة بالتربة في الأنظمة المائية أبدًا. كل سجل هو ميزان مائي مقاس. إذا نقص حد ما يذكره WO بدل افتراضه صفرًا. وحدود pH وEC مأخوذة من إعدادات النظام نفسه، ويمكن نسخها من ملف مرجعي موثّق المصدر.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 9 WEATHER -->
+<section class="slide" aria-label="9">
+  <h2><span class="en">Weather helps, but it is never required</span><span class="ar">الطقس مفيد، لكنه ليس شرطًا أبدًا</span></h2>
+  <div class="weather">
+    <div class="ladder">
+      <div class="row"><div class="state s1"><span class="en">Fresh</span><span class="ar">حديث</span></div><div><h3><span class="en">Fetch, validate, save</span><span class="ar">جلب وتحقق وحفظ</span></h3><p><span class="en">Open-Meteo daily ET0, rain, temperature, wind; ranges and array lengths checked; extended set retried as core on HTTP 400.</span><span class="ar">ET0 اليومي والمطر والحرارة والرياح من Open-Meteo؛ مع فحص النطاقات وأطوال المصفوفات، وإعادة المحاولة بالمجموعة الأساسية عند الخطأ 400.</span></p></div></div>
+      <div class="row"><div class="state s2"><span class="en">Cached</span><span class="ar">محفوظ</span></div><div><h3><span class="en">Latest valid snapshot</span><span class="ar">آخر لقطة صالحة</span></h3><p><span class="en">Used when offline; flagged stale after 12 h (a policy value in the knowledge base).</span><span class="ar">تُستخدم دون اتصال، وتُعلَّم قديمة بعد 12 ساعة (قيمة سياسة في قاعدة المعرفة).</span></p></div></div>
+      <div class="row"><div class="state s3"><span class="en">None</span><span class="ar">لا شيء</span></div><div><h3><span class="en">Unavailable, never invented</span><span class="ar">غير متوفر، دون اختلاق</span></h3><p><span class="en">The agent reports ET0 and rain as missing; the user can enter them manually (data quality: manual ET0).</span><span class="ar">يبلّغ الوكيل أن ET0 والمطر ناقصان، ويمكن للمستخدم إدخالهما يدويًا (جودة البيانات: ET0 يدوي).</span></p></div></div>
+      <div class="note"><span class="en">Relative humidity is air humidity at 2 m. WO never treats it as soil moisture.</span><span class="ar">الرطوبة النسبية هي رطوبة الهواء على ارتفاع 2 م، ولا يعاملها WO أبدًا كرطوبة للتربة.</span></div>
+    </div>
+    <div>
+      <div class="shot"><img class="en" src="assets/img/weather-en.webp" alt="WO weather page in offline mode: unavailable, no snapshot saved"><img class="ar" src="assets/img/weather-ar.webp" alt="صفحة الطقس في WO دون اتصال"></div>
+      <p class="small" style="margin-top:18px"><span class="en">The real weather page with offline mode on and no snapshot: it says so, and asks for manual ET0 and rain.</span><span class="ar">صفحة الطقس الحقيقية مع وضع عدم الاتصال ودون لقطة محفوظة: تقول ذلك صراحة، وتطلب إدخال ET0 والمطر يدويًا.</span></p>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">9 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The weather service has three outcomes: fresh, cached and unavailable. An invalid provider response is rejected and never stored. The screenshot was taken with offline mode enabled, so it shows the honest "unavailable" state rather than demo numbers.</div>
+    <div class="ar">لخدمة الطقس ثلاث نتائج: حديث، ومحفوظ، وغير متوفر. أي استجابة غير صالحة من المزوّد تُرفض ولا تُحفظ أبدًا. التُقطت الصورة مع تفعيل وضع عدم الاتصال، لذا تُظهر حالة «غير متوفر» بصدق بدل أرقام تجريبية.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 10 KB-AI (dark) -->
+<section class="slide dark" aria-label="10">
+  <h2><span class="en">A knowledge-based agent: TELL, then ASK</span><span class="ar">وكيل قائم على المعرفة: أخبِر ثم اسأل</span></h2>
+  <div class="kb">
+    <svg viewBox="0 0 820 700" width="820" height="700" role="img" aria-label="Agent cycle" style="direction:ltr">
+      <circle cx="410" cy="360" r="250" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+      <path d="M410 110 A250 250 0 0 1 660 360" fill="none" stroke="#10B981" stroke-width="4" marker-end="url(#ah)"/>
+      <path d="M660 360 A250 250 0 0 1 410 610" fill="none" stroke="#10B981" stroke-width="4" marker-end="url(#ah)"/>
+      <path d="M410 610 A250 250 0 0 1 160 360" fill="none" stroke="#10B981" stroke-width="4" marker-end="url(#ah)"/>
+      <path d="M160 360 A250 250 0 0 1 410 110" fill="none" stroke="#0EA5E9" stroke-width="4" marker-end="url(#ah2)"/>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#10B981"/></marker>
+        <marker id="ah2" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0EA5E9"/></marker>
+      </defs>
+      <g text-anchor="middle">
+        <rect x="290" y="62" width="240" height="96" rx="10" fill="#0A2C21" stroke="#10B981" stroke-width="2"/>
+        <text x="410" y="102" font-size="28" font-weight="600"><tspan class="en">Perceive</tspan><tspan class="ar">الإدراك</tspan></text>
+        <text x="410" y="136" font-size="19" fill="rgba(255,255,255,.75)"><tspan class="en">numbers → percepts</tspan><tspan class="ar">أرقام ← مدركات</tspan></text>
+        <rect x="540" y="312" width="250" height="96" rx="10" fill="#0A2C21" stroke="#10B981" stroke-width="2"/>
+        <text x="665" y="352" font-size="28" font-weight="600"><tspan class="en">TELL</tspan><tspan class="ar">أخبِر</tspan></text>
+        <text x="665" y="386" font-size="19" fill="rgba(255,255,255,.75)"><tspan class="en">known facts only</tspan><tspan class="ar">الحقائق المعروفة فقط</tspan></text>
+        <rect x="270" y="562" width="280" height="110" rx="10" fill="#10B981"/>
+        <text x="410" y="604" font-size="28" font-weight="600" fill="#0A2C21"><tspan class="en">ASK</tspan><tspan class="ar">اسأل</tspan></text>
+        <text x="410" y="634" font-size="18" fill="#0A2C21"><tspan class="en">events: forward chaining</tspan><tspan class="ar">الأحداث: تسلسل أمامي</tspan></text>
+        <text x="410" y="658" font-size="18" fill="#0A2C21"><tspan class="en">questions: backward chaining</tspan><tspan class="ar">الأسئلة: تسلسل خلفي</tspan></text>
+        <rect x="30" y="312" width="260" height="96" rx="10" fill="#0A2C21" stroke="#0EA5E9" stroke-width="2"/>
+        <text x="160" y="352" font-size="28" font-weight="600"><tspan class="en">Act + explain</tspan><tspan class="ar">نفّذ واشرح</tspan></text>
+        <text x="160" y="386" font-size="19" fill="rgba(255,255,255,.75)"><tspan class="en">TELL(action), t + 1</tspan><tspan class="ar">TELL(الإجراء)، t + 1</tspan></text>
+        <text x="410" y="330" font-size="21" fill="rgba(255,255,255,.8)"><tspan class="en">conflict resolution</tspan><tspan class="ar">حل التعارض</tspan></text>
+        <text x="410" y="364" font-size="19" fill="#A7F3D0"><tspan class="en">priority, then specificity,</tspan><tspan class="ar">الأولوية ثم التحديد</tspan></text>
+        <text x="410" y="392" font-size="19" fill="#A7F3D0"><tspan class="en">then rule code</tspan><tspan class="ar">ثم رمز القاعدة</tspan></text>
+      </g>
+    </svg>
+    <div>
+      <div class="kbstats">
+        <div><div class="n ltr">39</div><p><span class="en">Horn rules</span><span class="ar">قاعدة هورن</span></p></div>
+        <div><div class="n ltr">27</div><p><span class="en">percepts</span><span class="ar">مُدرَكًا</span></p></div>
+        <div><div class="n ltr">16</div><p><span class="en">parameters</span><span class="ar">معاملًا</span></p></div>
+        <div><div class="n ltr">8</div><p><span class="en">axioms</span><span class="ar">مسلّمات</span></p></div>
+      </div>
+      <div class="kbpoints">
+        <div><h3><span class="en">Unknown is not false</span><span class="ar">المجهول ليس خطأً</span></h3><p><span class="en"><span class="code">~x</span> holds only when x is known false, so rules stay Horn clauses and chaining stays sound and complete.</span><span class="ar"><span class="code">~x</span> يتحقق فقط إذا عُرف أن x خاطئ، فتبقى القواعد عبارات هورن ويبقى التسلسل سليمًا وكاملًا.</span></p></div>
+        <div><h3><span class="en">Every rule change is model-checked</span><span class="ar">كل تعديل على القواعد يُفحص منطقيًا</span></h3><p><span class="en">Clark completion + DPLL: consistency, integrity, dead rules, conflicts, coverage. Shipped KB: 60 SAT checks, no conflict.</span><span class="ar">إكمال كلارك مع DPLL: الاتساق وقيود السلامة والقواعد الميتة والتعارضات والتغطية. قاعدة المعرفة الحالية: 60 فحص إشباع دون أي تعارض.</span></p></div>
+        <div><h3><span class="en">Logic Lab: five engines agree</span><span class="ar">مختبر المنطق: خمسة محركات تتفق</span></h3><p><span class="en">Forward and backward chaining, TT-ENTAILS, DPLL and resolution on the same query.</span><span class="ar">التسلسل الأمامي والخلفي وTT-ENTAILS وDPLL والاستنتاج بالتحليل على الاستعلام نفسه.</span></p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">10 / 16</span></div>
+  <aside class="notes">
+    <div class="en">This is the KB-AGENT of Figure 7.1 in the textbook. Perception turns numbers into percepts, which are told to the knowledge base. Forward chaining answers system events; backward chaining answers questions and returns the missing data. When two actions compete, priority, then specificity, then rule code decides. When an administrator edits a rule, DPLL checks the whole knowledge base before saving.</div>
+    <div class="ar">هذا هو KB-AGENT في الشكل 7.1 من الكتاب. يحوّل الإدراك الأرقام إلى مدركات تُخبَر بها قاعدة المعرفة. التسلسل الأمامي يجيب عن أحداث النظام، والتسلسل الخلفي يجيب عن الأسئلة ويعيد البيانات الناقصة. عند تنافس إجراءين يُحسم الأمر بالأولوية ثم التحديد ثم رمز القاعدة. وعندما يعدّل المشرف قاعدة يفحص DPLL قاعدة المعرفة كاملة قبل الحفظ.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 11 CHATBOT -->
+<section class="slide" aria-label="11">
+  <h2><span class="en">An assistant that answers only from your data</span><span class="ar">مساعد يجيب من بياناتك فقط</span></h2>
+  <div class="chat">
+    <div>
+      <div class="shot"><img class="en" src="assets/img/chatbot-en.webp" alt="WO assistant asking for missing data"><img class="ar" src="assets/img/chatbot-ar.webp" alt="مساعد WO يطلب البيانات الناقصة"></div>
+      <p class="small" style="margin-top:16px"><span class="en">Real screen: weather was offline, so the agent answered "Insufficient data" and asked for ET0, rain and available water.</span><span class="ar">شاشة حقيقية: الطقس كان غير متصل، فأجاب الوكيل «لا توجد بيانات كافية» وطلب ET0 والمطر والماء المتاح.</span></p>
+    </div>
+    <div>
+      <ol class="steps">
+        <li><div><h3><span class="en">Normalise</span><span class="ar">التطبيع</span></h3><p><span class="en">Strip tashkeel and tatweel, unify alef, taa marbuta, yaa; Arabic digits to 0–9.</span><span class="ar">حذف التشكيل والتطويل وتوحيد الألف والتاء المربوطة والياء وتحويل الأرقام.</span></p></div></li>
+        <li><div><h3><span class="en">Detect intent</span><span class="ar">تحديد النية</span></h3><p><span class="en">10 intents, weighted Arabic and English patterns, threshold and tie rules.</span><span class="ar">10 نوايا بأنماط عربية وإنجليزية موزونة مع حد أدنى وقواعد للتعادل.</span></p></div></li>
+        <li><div><h3><span class="en">Extract entities</span><span class="ar">استخراج الكيانات</span></h3><p><span class="en">Your crops and aliases, dates such as <bdi>اليوم</bdi> and <bdi>بكرة</bdi>, litres and m³.</span><span class="ar">محاصيلك وأسماؤها البديلة، والتواريخ (اليوم، بكرة)، واللترات والأمتار المكعبة.</span></p></div></li>
+        <li><div><h3><span class="en">Fill slots from missing data</span><span class="ar">ملء الخانات من البيانات الناقصة</span></h3><p><span class="en">Two tomato plantings: "Which planting?" Weather offline: "Send ET0 and rain." No water figure: "How many litres?"</span><span class="ar">زراعتا طماطم: «أي زراعة تقصد؟» وطقس غير متصل: «أرسل التبخر والمطر». ولا كمية ماء: «كم لترًا متاح؟»</span></p></div></li>
+        <li><div><h3><span class="en">Run the agent, fill a template</span><span class="ar">تشغيل الوكيل وملء قالب</span></h3><p><span class="en">Same rules and explanation as the irrigation page. No LLM.</span><span class="ar">القواعد والشرح نفسها كما في صفحة الري، دون نموذج لغوي.</span></p></div></li>
+      </ol>
+      <div class="example"><div class="q">هل أسقي الطماطم اليوم؟</div><div class="r"><span class="en">normalised:</span><span class="ar">بعد التطبيع:</span> <bdi>هل اسقي الطماطم اليوم</bdi><br><span class="mono nb">intent = irrigation_advice (3.5), date = today</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">11 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The chatbot is a deterministic front-end to the same agent. The example line is real output of the NLU module. When backward chaining reports missing data, the chatbot turns it into a follow-up question, and the next message fills the slot.</div>
+    <div class="ar">المساعد واجهة حتمية للوكيل نفسه. سطر المثال ناتج حقيقي لوحدة فهم اللغة. عندما يبلّغ التسلسل الخلفي عن بيانات ناقصة يحوّلها المساعد إلى سؤال متابعة، والرسالة التالية تملأ الخانة.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 12 LAND -->
+<section class="slide" aria-label="12">
+  <h2><span class="en">Land distribution as search: A* finds the optimum with 7 expansions</span><span class="ar">توزيع الأرض كمسألة بحث: A* يجد الأمثل بسبع توسعات</span></h2>
+  <div class="land">
+    <div>
+      <div class="grid20" aria-label="Optimal allocation: 8 tomato, 1 onion, 4 watermelon, 7 fallow">
+        <span class="u-t"></span><span class="u-t"></span><span class="u-t"></span><span class="u-t"></span><span class="u-t"></span>
+        <span class="u-t"></span><span class="u-t"></span><span class="u-t"></span><span class="u-o"></span><span class="u-w"></span>
+        <span class="u-w"></span><span class="u-w"></span><span class="u-w"></span><span class="u-f"></span><span class="u-f"></span>
+        <span class="u-f"></span><span class="u-f"></span><span class="u-f"></span><span class="u-f"></span><span class="u-f"></span>
+      </div>
+      <div class="legend">
+        <span><i class="u-t"></i><span class="en">Tomato 8</span><span class="ar">طماطم 8</span></span>
+        <span><i class="u-o"></i><span class="en">Onion 1</span><span class="ar">بصل 1</span></span>
+        <span><i class="u-w"></i><span class="en">Watermelon 4</span><span class="ar">بطيخ 4</span></span>
+        <span><i class="u-f"></i><span class="en">Fallow 7</span><span class="ar">بور 7</span></span>
+      </div>
+      <p class="small" style="margin-top:22px"><span class="en">Water is the binding constraint: 4,491,285 of 4,500,000 L used; tomato is at its maximum area.</span><span class="ar">الماء هو القيد الحاكم: استُخدم 4,491,285 من 4,500,000 لتر، والطماطم عند حدها الأقصى من المساحة.</span></p>
+    </div>
+    <div>
+      <table class="cmp">
+        <thead><tr><th><span class="en">Algorithm</span><span class="ar">الخوارزمية</span></th><th style="text-align:end"><span class="en">Production (kg)</span><span class="ar">الإنتاج (كغ)</span></th><th style="text-align:end"><span class="en">Nodes expanded</span><span class="ar">العقد الموسّعة</span></th><th style="text-align:end"><span class="en">Max frontier</span><span class="ar">أقصى حدود</span></th><th><span class="en">Guarantee</span><span class="ar">الضمان</span></th></tr></thead>
+        <tbody>
+          <tr class="best"><td>A*</td><td class="num">32,000</td><td class="num">7</td><td class="num">29</td><td><span class="badge"><span class="en">optimal</span><span class="ar">أمثل</span></span></td></tr>
+          <tr><td><span class="en">Uniform-cost</span><span class="ar">التكلفة المنتظمة</span></td><td class="num">32,000</td><td class="num">271</td><td class="num">911</td><td><span class="badge"><span class="en">optimal</span><span class="ar">أمثل</span></span></td></tr>
+          <tr><td><span class="en">Greedy best-first</span><span class="ar">الأفضل أولًا الجشع</span></td><td class="num">30,000</td><td class="num">4</td><td class="num">10</td><td><span class="badge no"><span class="en">none</span><span class="ar">لا يوجد</span></span></td></tr>
+          <tr><td><span class="en">Breadth-first</span><span class="ar">العرض أولًا</span></td><td class="num">6,000</td><td class="num">55</td><td class="num">217</td><td><span class="badge no"><span class="en">none</span><span class="ar">لا يوجد</span></span></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:24px;margin-top:30px"><span class="en">Heuristic h = remaining units × p_max − fractional-knapsack upper bound (land- and water-relaxed). It never overestimates, so A* is optimal for the selected objective.</span><span class="ar">الدالة الاستدلالية h = الوحدات المتبقية × p_max − الحد الأعلى لحقيبة الظهر الكسرية (بإرخاء قيدي الأرض والماء). لا تبالغ أبدًا في التقدير، لذا A* أمثل للهدف المختار.</span></p>
+      <p class="src" style="margin-top:24px"><span class="en">Example instance computed with WO's search code: 10,000 m² in 20 units, 4.5 million L for the season, <span class="nb">FAO-56</span> seasonal water (ET0 5.5 mm/day, drip 0.90), illustrative yields entered as user inputs. Result statement: "Optimal under the selected objective and constraints."</span><span class="ar">مثال محسوب بكود البحث في WO: 10,000 م² في 20 وحدة، و4.5 مليون لتر للموسم، واحتياج موسمي وفق <span class="nb">FAO-56</span> (ET0 = 5.5 مم/يوم، تنقيط 0.90)، وإنتاجيات توضيحية مُدخلة كمدخلات مستخدم. عبارة النتيجة: «أمثل وفق الهدف والقيود المختارة».</span></p>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">12 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The state is the crops decided so far with the land and water used. A* and uniform-cost search find the same optimum, but A* expands 7 nodes instead of 271. Greedy is fast but stops at 30,000 kg, and breadth-first returns the first complete allocation. On 46 random feasible instances A* matched UCS every time. The yields are illustrative inputs, not data.</div>
+    <div class="ar">الحالة هي المحاصيل التي حُسمت حتى الآن مع الأرض والماء المستخدمين. يجد A* والبحث بالتكلفة المنتظمة الحل الأمثل نفسه، لكن A* يوسّع 7 عقد بدل 271. الجشع سريع لكنه يتوقف عند 30,000 كغ، والعرض أولًا يعيد أول توزيع كامل. وفي 46 مثالًا عشوائيًا قابلًا للحل طابق A* نتيجة UCS في كل مرة. الإنتاجيات مدخلات توضيحية وليست بيانات.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 13 DASHBOARD -->
+<section class="slide" aria-label="13">
+  <h2><span class="en">Dashboards show real numbers, or an empty state</span><span class="ar">لوحات المعلومات تعرض أرقامًا حقيقية أو حالة فارغة</span></h2>
+  <div class="dash">
+    <div class="browser shot"><div class="chrome-bar"><i></i><i></i><i></i></div><img class="en" src="assets/img/dashboard-en.webp" alt="WO dashboard (English)"><img class="ar" src="assets/img/dashboard-ar.webp" alt="لوحة معلومات WO (عربي)"></div>
+    <div class="phone"><img src="assets/img/mobile-dashboard-ar.webp" alt="WO dashboard on a phone, Arabic, right-to-left"></div>
+    <div class="callouts">
+      <div><h3><span class="en">From the database</span><span class="ar">من قاعدة البيانات</span></h3><p><span class="en">Counts, last-30-day water, crop areas, alerts, weather age.</span><span class="ar">الأعداد ومياه آخر 30 يومًا ومساحات المحاصيل والتنبيهات وعمر بيانات الطقس.</span></p></div>
+      <div><h3><span class="en">Statistics need history</span><span class="ar">الإحصاءات تحتاج سجلًا</span></h3><p><span class="en">Trends appear after 7 days with records.</span><span class="ar">تظهر الاتجاهات بعد 7 أيام من السجلات.</span></p></div>
+      <div><h3><span class="en">Arabic first</span><span class="ar">العربية أولًا</span></h3><p><span class="en">Full RTL on desktop and phone.</span><span class="ar">اتجاه كامل من اليمين لليسار على الحاسوب والهاتف.</span></p></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">13 / 16</span></div>
+  <aside class="notes">
+    <div class="en">Both screenshots are from the running application with one test farm. Every value is computed from records in the database; with no farm the dashboard shows an onboarding empty state and no numbers. The phone view shows the Arabic right-to-left layout.</div>
+    <div class="ar">الصورتان من التطبيق أثناء التشغيل بمزرعة اختبار واحدة. كل قيمة محسوبة من السجلات في قاعدة البيانات، ودون مزرعة تعرض اللوحة حالة فارغة إرشادية دون أرقام. وتُظهر صورة الهاتف التخطيط العربي من اليمين لليسار.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 14 EVIDENCE -->
+<section class="slide" aria-label="14">
+  <h2><span class="en">Measuring impact without overclaiming</span><span class="ar">قياس الأثر دون مبالغة</span></h2>
+  <div class="claim"><p><span class="en">WO does not claim to save water. Savings are computed only from a measured baseline that the farm records itself.</span><span class="ar">لا يدّعي WO أنه يوفّر الماء. يُحسب الوفر فقط من خط أساس مقاس تسجله المزرعة بنفسها.</span></p></div>
+  <div class="quad">
+    <div><div class="ix"><span class="en">Calculated</span><span class="ar">محسوب</span></div><h3><span class="en">Requirement</span><span class="ar">الاحتياج</span></h3><div class="f">Σ <span class="nb">FAO-56</span> gross L</div><p><span class="en">What the crop needed by <span class="nb">FAO-56</span> on the recorded days.</span><span class="ar">ما احتاجه المحصول وفق <span class="nb">FAO-56</span> في الأيام المسجلة.</span></p></div>
+    <div><div class="ix"><span class="en">Actual</span><span class="ar">فعلي</span></div><h3><span class="en">Usage</span><span class="ar">الاستهلاك</span></h3><div class="f">Σ recorded L</div><p><span class="en">What the water records say was applied.</span><span class="ar">ما تقول سجلات المياه إنه استُخدم.</span></p></div>
+    <div><div class="ix"><span class="en">Apparent</span><span class="ar">ظاهري</span></div><h3><span class="en">Savings</span><span class="ar">الوفر</span></h3><div class="f">calculated − actual</div><p class="warn"><span class="en">May reflect under-irrigation or unrecorded use. Not proof of savings.</span><span class="ar">قد يعكس ريًا ناقصًا أو استهلاكًا غير مسجل. ليس دليلًا على الوفر.</span></p></div>
+    <div><div class="ix"><span class="en">Measured</span><span class="ar">مقاس</span></div><h3><span class="en">Savings</span><span class="ar">الوفر</span></h3><div class="f">baseline − current<br>(L/m²/day)</div><p><span class="en">Only with a recorded baseline and at least 7 days of records. Otherwise: "Not available — record a baseline."</span><span class="ar">فقط مع خط أساس مسجل و7 أيام سجلات على الأقل. وإلا: «غير متوفر — سجّل خط أساس».</span></p></div>
+  </div>
+  <p class="src" style="position:absolute;bottom:92px;inset-inline-start:128px;max-width:1600px"><span class="en">Implemented in water_service.impact (GET /api/water/impact). Weather and crop-stage differences between periods are not normalised, and the report says so.</span><span class="ar">مُنفّذ في water_service.impact (GET /api/water/impact). لا تُعدَّل فروق الطقس ومراحل المحصول بين الفترتين، والتقرير يذكر ذلك.</span></p>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">14 / 16</span></div>
+  <aside class="notes">
+    <div class="en">This slide is about honesty. A calculated number is not a saving. Apparent savings can simply mean the crop was under-irrigated. Only a measured baseline period compared with measured current use gives measured savings, and WO shows "not available" until that exists. We therefore make no claim about how much water WO saves.</div>
+    <div class="ar">هذه الشريحة عن الأمانة. الرقم المحسوب ليس وفرًا. والوفر الظاهري قد يعني ببساطة أن المحصول رُوي بأقل من حاجته. فقط مقارنة فترة أساس مقاسة بالاستهلاك الحالي المقاس تعطي وفرًا مقاسًا، ويعرض WO «غير متوفر» حتى يوجد ذلك. لذلك لا ندّعي أي مقدار لوفر المياه بسبب WO.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 15 SECURITY -->
+<section class="slide" aria-label="15">
+  <h2><span class="en">Security lives in the backend</span><span class="ar">الأمان مكانه الواجهة الخلفية</span></h2>
+  <div class="sec">
+    <div>
+      <table class="roles">
+        <thead><tr>
+          <th><span class="en">Permission</span><span class="ar">الصلاحية</span></th>
+          <th><span class="en">Individual</span><span class="ar">فرد</span></th><th><span class="en">Company owner</span><span class="ar">مالك شركة</span></th><th><span class="en">Farm manager</span><span class="ar">مدير مزرعة</span></th><th><span class="en">Employee</span><span class="ar">موظف</span></th><th><span class="en">Super admin</span><span class="ar">مشرف عام</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span class="en">Read farm data</span><span class="ar">قراءة بيانات المزرعة</span></td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Add records, run AI</span><span class="ar">إضافة سجلات وتشغيل الذكاء</span></td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Edit farms and plantings</span><span class="ar">تعديل المزارع والزراعات</span></td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="n">—</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Delete records</span><span class="ar">حذف السجلات</span></td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="n">—</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Delete farms</span><span class="ar">حذف المزارع</span></td><td class="y">✓</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Assign members, manage users</span><span class="ar">تعيين الأعضاء وإدارة المستخدمين</span></td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+          <tr><td><span class="en">Edit the knowledge base</span><span class="ar">تعديل قاعدة المعرفة</span></td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        </tbody>
+      </table>
+      <p class="src" style="margin-top:16px"><span class="en">From services/access.py and the role checks in the services.</span><span class="ar">من services/access.py وفحوص الأدوار في الخدمات.</span></p>
+    </div>
+    <div class="seclist">
+      <div><h3><span class="en">Another company's farm: 404</span><span class="ar">مزرعة شركة أخرى: 404</span></h3><p><span class="en">Not 403, so existence is never leaked.</span><span class="ar">وليس 403، حتى لا يُكشف وجودها.</span></p></div>
+      <div><h3><span class="en">JWT with revocation</span><span class="ar">JWT مع إمكانية الإلغاء</span></h3><p><span class="en">HS256, 2 h expiry; logout bumps <span class="code">token_version</span>.</span><span class="ar">HS256 بصلاحية ساعتين؛ وتسجيل الخروج يزيد <span class="code">token_version</span>.</span></p></div>
+      <div><h3><span class="en">Argon2id passwords</span><span class="ar">كلمات مرور Argon2id</span></h3><p><span class="en">Login limited to 10 attempts per 5 minutes.</span><span class="ar">الدخول محدود بعشر محاولات كل 5 دقائق.</span></p></div>
+      <div><h3><span class="en">Uniform errors, no stack traces</span><span class="ar">أخطاء موحّدة دون تتبع للمكدس</span></h3><p><span class="en">Security headers, CSP, CORS from environment.</span><span class="ar">ترويسات أمان وCSP وCORS من متغيرات البيئة.</span></p></div>
+      <div><h3><span class="en">36 audited actions</span><span class="ar">36 إجراءً مُدقَّقًا</span></h3><p><span class="en">Logins, records, recommendations, KB edits; secrets never logged.</span><span class="ar">تسجيلات الدخول والسجلات والتوصيات وتعديلات قاعدة المعرفة؛ دون تسجيل الأسرار.</span></p></div>
+    </div>
+  </div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">15 / 16</span></div>
+  <aside class="notes">
+    <div class="en">The frontend hides what a role cannot do, but every rule is enforced again in the backend. Visibility is part of the SQL query, so a user from company A who asks for a farm of company B gets the same 404 as for a farm that does not exist. Logout and password changes revoke every token of the user.</div>
+    <div class="ar">تُخفي الواجهة الأمامية ما لا يستطيعه الدور، لكن كل قاعدة تُفرض مجددًا في الواجهة الخلفية. الرؤية جزء من استعلام SQL، فالمستخدم من الشركة أ الذي يطلب مزرعة للشركة ب يحصل على 404 نفسه كما لو كانت المزرعة غير موجودة. وتسجيل الخروج وتغيير كلمة المرور يلغيان كل رموز المستخدم.</div>
+  </aside>
+</section>
+
+<!-- =============================================================== 16 CONCLUSION (dark) -->
+<section class="slide dark" aria-label="16">
+  <h2><span class="en">What WO shows</span><span class="ar">ما يقدّمه WO</span></h2>
+  <div class="concl">
+    <div><h3><span class="en">Course concepts, working</span><span class="ar">مفاهيم المقرر مطبّقة</span></h3><ul>
+      <li><span class="en">Knowledge-based agent, TELL/ASK (ch. 7)</span><span class="ar">وكيل قائم على المعرفة، أخبِر/اسأل (الفصل 7)</span></li>
+      <li><span class="en">Forward and backward chaining, DPLL, TT&#8209;ENTAILS</span><span class="ar">تسلسل أمامي وخلفي، DPLL، TT-ENTAILS</span></li>
+      <li><span class="en">BFS, UCS, Greedy, A* with an admissible heuristic (ch.&nbsp;3)</span><span class="ar">BFS وUCS والجشع وA* بدالة استدلالية مقبولة (الفصل 3)</span></li>
+      <li><span class="en">CSP with AC-3, MRV, LCV, forward checking (ch.&nbsp;6)</span><span class="ar">تحقيق القيود مع AC-3 وMRV وLCV والفحص الأمامي (الفصل 6)</span></li>
+    </ul></div>
+    <div><h3><span class="en">Built to be trusted</span><span class="ar">مبني ليكون موثوقًا</span></h3><ul>
+      <li><span class="en">Every recommendation explains itself</span><span class="ar">كل توصية تشرح نفسها</span></li>
+      <li><span class="en">Every coefficient cites its source</span><span class="ar">كل معامل يذكر مصدره</span></li>
+      <li><span class="en">Missing data is named, never guessed</span><span class="ar">البيانات الناقصة تُسمّى ولا تُخمَّن</span></li>
+      <li><span class="en">No savings claimed without a measured baseline</span><span class="ar">لا ادعاء للوفر دون خط أساس مقاس</span></li>
+    </ul></div>
+    <div><h3><span class="en">Next steps</span><span class="ar">الخطوات التالية</span></h3><ul>
+      <li><span class="en">Root-zone soil water balance (<span class="nb">FAO-56</span> ch. 8)</span><span class="ar">ميزان ماء منطقة الجذور (الفصل 8 من <span class="nb">FAO-56</span>)</span></li>
+      <li><span class="en">Optional sensor input for soil moisture and flow</span><span class="ar">إدخال اختياري من حساسات رطوبة التربة والتدفق</span></li>
+      <li><span class="en">More sourced hydroponic profiles</span><span class="ar">ملفات مرجعية أكثر للزراعة المائية مع مصادرها</span></li>
+      <li><span class="en">Weather-normalised impact evaluation</span><span class="ar">تقييم أثر معدَّل حسب الطقس</span></li>
+    </ul></div>
+  </div>
+  <div class="thanks"><span class="en">Thank you</span><span class="ar">شكرًا لكم</span></div>
+  <div class="foot"><span><span class="en">WO — Water Optimization</span><span class="ar">WO — تحسين استخدام المياه</span></span><span class="num">16 / 16</span></div>
+  <aside class="notes">
+    <div class="en">To close: WO puts four chapters of the course to work on a real problem, and it is designed to be honest about what it knows. The limitations page lists what is simplified, such as the daily effective-rain fraction and the absence of sensors. Questions are welcome; the Logic Lab and the land-distribution page are good live demos.</div>
+    <div class="ar">في الختام: يطبّق WO أربعة فصول من المقرر على مشكلة حقيقية، وهو مصمّم ليكون صادقًا بشأن ما يعرفه. صفحة القيود تذكر التبسيطات، مثل نسبة المطر الفعّال اليومية وغياب الحساسات. نرحب بالأسئلة، ومختبر المنطق وصفحة توزيع الأرض مناسبان للعرض المباشر.</div>
+  </aside>
+</section>
+
+</div>
+</div>
+
+<div class="progress" aria-hidden="true"><span id="progress"></span></div>
+<div class="notes-panel" id="notesPanel" role="region" aria-live="polite" aria-label="Speaker notes"></div>
+<nav class="chrome" id="chrome" aria-label="Slide controls">
+  <button type="button" id="prev" aria-label="Previous slide">&#8592;</button>
+  <span class="count" id="count">1 / 16</span>
+  <button type="button" id="next" aria-label="Next slide">&#8594;</button>
+  <button type="button" id="langBtn" aria-label="Switch language">ع</button>
+  <button type="button" id="notesBtn" aria-label="Toggle speaker notes (N)">N</button>
+  <button type="button" id="fsBtn" aria-label="Toggle fullscreen (F)">F</button>
+</nav>
+
+<script>
+(function () {
+  "use strict";
+  var html = document.documentElement;
+  var stage = document.getElementById("stage");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var total = slides.length;
+  var params = new URLSearchParams(location.search);
+  var idx = 0, lang = "en", notesOpen = false, idleTimer = null;
+
+  function store(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* storage unavailable */ } }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  lang = params.get("lang") || read("wo-deck-lang") || "en";
+  if (lang !== "ar") lang = "en";
+  var fromHash = parseInt((location.hash || "").replace("#", ""), 10);
+  var fromParam = parseInt(params.get("slide") || "", 10);
+  if (fromParam >= 1 && fromParam <= total) idx = fromParam - 1;
+  else if (fromHash >= 1 && fromHash <= total) idx = fromHash - 1;
+  if (params.has("clean")) html.classList.add("clean");
+  if (params.get("notes") === "1") notesOpen = true;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    var x = (window.innerWidth - 1920 * s) / 2, y = (window.innerHeight - 1080 * s) / 2;
+    stage.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+  }
+
+  function renderNotes() {
+    var panel = document.getElementById("notesPanel");
+    var aside = slides[idx].querySelector(".notes ." + lang);
+    panel.innerHTML = "<strong>" + (lang === "ar" ? "ملاحظات المتحدث" : "Speaker notes") + " — " + (idx + 1) + " / " + total + "</strong>" +
+      (aside ? aside.innerHTML : "");
+    panel.classList.toggle("open", notesOpen);
+  }
+
+  function setLang(l) {
+    lang = l === "ar" ? "ar" : "en";
+    html.setAttribute("lang", lang);
+    html.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    html.setAttribute("data-lang", lang);
+    document.getElementById("langBtn").textContent = lang === "ar" ? "EN" : "ع";
+    document.getElementById("langBtn").setAttribute("aria-label", lang === "ar" ? "Switch to English" : "التبديل إلى العربية");
+    store("wo-deck-lang", lang);
+    renderNotes();
+  }
+
+  function go(i) {
+    idx = Math.max(0, Math.min(total - 1, i));
+    for (var k = 0; k < total; k++) slides[k].classList.toggle("active", k === idx);
+    document.getElementById("count").textContent = (idx + 1) + " / " + total;
+    document.getElementById("progress").style.width = ((idx + 1) / total * 100) + "%";
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search + "#" + (idx + 1));
+    renderNotes();
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) { if (html.requestFullscreen) html.requestFullscreen().catch(function () {}); }
+    else if (document.exitFullscreen) document.exitFullscreen();
+  }
+
+  function wake() {
+    var c = document.getElementById("chrome");
+    c.classList.remove("idle");
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () { c.classList.add("idle"); }, 2500);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar": e.preventDefault(); go(idx + 1); break;
+      case "ArrowLeft": case "PageUp": case "Backspace": e.preventDefault(); go(idx - 1); break;
+      case "Home": e.preventDefault(); go(0); break;
+      case "End": e.preventDefault(); go(total - 1); break;
+      case "f": case "F": toggleFullscreen(); break;
+      case "n": case "N": notesOpen = !notesOpen; renderNotes(); break;
+      case "l": case "L": setLang(lang === "ar" ? "en" : "ar"); break;
+      default: return;
+    }
+    wake();
+  });
+
+  document.getElementById("viewport").addEventListener("click", function (e) {
+    if (e.target.closest("a")) return;
+    var forward = e.clientX > window.innerWidth / 3;
+    if (e.shiftKey) forward = false;
+    go(idx + (forward ? 1 : -1));
+  });
+  document.getElementById("prev").addEventListener("click", function () { go(idx - 1); });
+  document.getElementById("next").addEventListener("click", function () { go(idx + 1); });
+  document.getElementById("langBtn").addEventListener("click", function () { setLang(lang === "ar" ? "en" : "ar"); });
+  document.getElementById("notesBtn").addEventListener("click", function () { notesOpen = !notesOpen; renderNotes(); });
+  document.getElementById("fsBtn").addEventListener("click", toggleFullscreen);
+  document.addEventListener("mousemove", wake);
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var h = parseInt((location.hash || "").replace("#", ""), 10);
+    if (h >= 1 && h <= total && h - 1 !== idx) go(h - 1);
+  });
+
+  fit();
+  setLang(lang);
+  go(idx);
+  wake();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+classDiagram
+    direction LR
+    class WeatherProvider {
+        <<Protocol>>
+        +str name
+        +fetch(latitude, longitude) WeatherData
+    }
+    class OpenMeteoProvider {
+        +str name = "open-meteo"
+        +str base_url
+        +float timeout = 8.0
+        -httpx.Client _client
+        +fetch(latitude, longitude) WeatherData
+        -_get(params) httpx.Response
+    }
+    class WeatherData {
+        <<dataclass>>
+        +str provider
+        +float latitude
+        +float longitude
+        +str timezone
+        +dict current
+        +dict daily
+        +dict units
+        +str variables_set «core|extended»
+    }
+    class open_meteo {
+        <<module>>
+        +CORE_DAILY
+        +EXTENDED_DAILY
+        +CURRENT
+        +RANGES
+        +validate_payload(payload, daily_vars)
+    }
+    class WeatherUnavailableError {
+        <<exception>>
+    }
+    class WeatherValidationError {
+        <<exception>>
+    }
+    class weather_service {
+        <<module · WeatherService>>
+        +set_provider(provider)
+        +get_provider() WeatherProvider
+        +latest_snapshot(db, farm_id) WeatherSnapshot
+        +get_weather(db, farm, params, force_refresh) WeatherStatus
+        +day_values(status, target) WeatherDay
+        +snapshot_dict(snapshot) dict
+    }
+    class WeatherStatus {
+        <<dataclass>>
+        +str status «fresh|cached|unavailable»
+        +WeatherSnapshot snapshot
+        +float age_hours
+        +bool stale
+        +str message
+        +bool fetched_now
+        +to_dict() dict
+    }
+    class WeatherSnapshot {
+        <<table weather_snapshots>>
+        +UUID id
+        +UUID farm_id
+        +str provider
+        +float latitude, longitude
+        +str timezone
+        +datetime fetched_at
+        +json current
+        +json daily
+        +json units
+        +str variables_set
+    }
+    class WeatherDay {
+        <<dataclass>>
+        +str status
+        +str snapshot_id
+        +float age_hours
+        +float et0_mm
+        +float precipitation_mm
+        +float rh_min
+        +float wind_mean_10m
+    }
+
+    WeatherProvider <|.. OpenMeteoProvider : implements
+    OpenMeteoProvider ..> open_meteo : validates with
+    OpenMeteoProvider ..> WeatherData : returns
+    OpenMeteoProvider ..> WeatherUnavailableError : raises
+    OpenMeteoProvider ..> WeatherValidationError : raises
+    weather_service --> WeatherProvider : depends on
+    weather_service ..> WeatherSnapshot : saves / reads
+    weather_service ..> WeatherStatus : returns
+    weather_service ..> WeatherDay : day_values
+    WeatherStatus o-- WeatherSnapshot

@@ -1,0 +1,166 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+classDiagram
+    direction LR
+    class Role {
+        <<enumeration>>
+        INDIVIDUAL
+        COMPANY_OWNER
+        FARM_MANAGER
+        EMPLOYEE
+        SUPER_ADMIN
+    }
+    class Company {
+        +UUID id
+        +str name
+        +datetime created_at
+    }
+    class User {
+        +UUID id
+        +str email «unique»
+        +str password_hash «Argon2id»
+        +str full_name
+        +Role role
+        +UUID company_id «nullable»
+        +bool is_active
+        +str preferred_language «ar|en»
+        +int token_version
+        +datetime last_login_at
+    }
+    class Farm {
+        +UUID id
+        +str name
+        +UUID company_id «nullable»
+        +UUID owner_user_id «nullable»
+        +float latitude «-90..90»
+        +float longitude «-180..180»
+        +float total_area_m2 «>0»
+        +str water_source
+        +float daily_water_allowance_l «≥0»
+        +bool is_demo
+    }
+    class FarmMember {
+        +UUID id
+        +UUID farm_id
+        +UUID user_id
+    }
+    class Crop {
+        +UUID id
+        +str code
+        +str name_en / name_ar
+        +list aliases
+        +float kc_ini, kc_mid, kc_end
+        +int l_ini, l_dev, l_mid, l_late
+        +float max_height_m
+        +float ky
+        +bool is_perennial
+        +str source
+        +bool is_reference
+        +season_length_days() int
+    }
+    class IrrigationMethod {
+        +UUID id
+        +str code «surface|sprinkler|drip»
+        +float efficiency «0..1»
+        +str source
+    }
+    class FarmCrop {
+        <<planting>>
+        +UUID id
+        +UUID farm_id
+        +UUID crop_id
+        +str variety
+        +float area_m2 «>0»
+        +date planting_date
+        +UUID irrigation_method_id
+        +float irrigation_efficiency «override»
+        +GrowthStage stage_override
+        +PlantingStatus status «active|harvested»
+    }
+    class Recommendation {
+        +UUID id
+        +UUID farm_id
+        +UUID farm_crop_id «nullable»
+        +UUID hydroponic_system_id «nullable»
+        +str kind «irrigation|hydroponic»
+        +str action
+        +str title_en / title_ar
+        +str summary_en / summary_ar
+        +float amount_l
+        +date target_date
+        +str certainty «entailed»
+        +str data_quality
+        +json payload «explanation contract»
+        +RecommendationStatus status «new|accepted|dismissed»
+    }
+    class Alert {
+        +UUID id
+        +UUID farm_id
+        +UUID farm_crop_id «nullable»
+        +UUID hydroponic_system_id «nullable»
+        +str rule_code
+        +str symbol
+        +AlertSeverity severity «info|warning|critical»
+        +str title_en / message_en
+        +json evidence
+        +AlertStatus status «open|acknowledged|resolved»
+        +str dedupe_key
+    }
+
+    Company "1" -- "0..*" User : employs
+    Company "1" *-- "0..*" Farm : owns
+    User "1" -- "0..*" Farm : owns (INDIVIDUAL)
+    Farm "1" *-- "0..*" FarmMember : assignments
+    User "1" -- "0..*" FarmMember : assigned to
+    Farm "1" *-- "0..*" FarmCrop : plantings
+    Crop "1" -- "0..*" FarmCrop : grown as
+    IrrigationMethod "0..1" -- "0..*" FarmCrop : default efficiency
+    Farm "1" *-- "0..*" Recommendation
+    FarmCrop "0..1" -- "0..*" Recommendation
+    Farm "1" *-- "0..*" Alert
+    FarmCrop "0..1" -- "0..*" Alert
+    User ..> Role

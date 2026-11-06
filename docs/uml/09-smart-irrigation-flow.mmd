@@ -1,0 +1,116 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+flowchart TD
+    start(["POST /api/irrigation/recommendation<br/>{farm_crop_id, target_date?, available_water_l?,<br/>et0_override_mm?, precipitation_override_mm?, persist}"])
+    acc{"Planting and farm visible?<br/>role has ai.run?"}
+    e404["404 not_found (not visible)<br/>403 forbidden (no permission)"]
+    eff{"Irrigation method or<br/>efficiency set?"}
+    e422["422 — set an irrigation<br/>method or efficiency first"]
+    kb["load_knowledge(db)"]
+    wx["get_weather(farm): fresh → cached → unavailable<br/>day_values(target date)"]
+    pd{"Planting date or<br/>stage override?"}
+    stu["stage_* percepts UNKNOWN<br/>(missing: planting_date)"]
+    stage["growth_stage (FAO-56 Table 11)"]
+    season{"Season status"}
+    nyp["not_yet_planted = true"]
+    se["season_ended = true"]
+    kc["Kc (Eq. 66) + climatic adjustment<br/>(Eq. 62/65) if RHmin, u₂ (Eq. 47), h known"]
+    et0{"ET0 available?<br/>(weather or manual)"}
+    etu["et_demand_positive,<br/>rain_covers_demand UNKNOWN<br/>(missing: et0)"]
+    etc["ETc = Kc × ET0"]
+    pr{"Precipitation<br/>available?"}
+    pru["rain_covers_demand UNKNOWN<br/>(missing: precipitation)"]
+    nir["P_eff = 0.8 × P · NIR = max(0, ETc − P_eff)<br/>net = NIR × area · gross = net / efficiency"]
+    aw{"Available water known?<br/>(request or farm daily allowance)"}
+    awu["water_sufficient / limited / critical<br/>UNKNOWN (missing: available_water)"]
+    wp["water_sufficient · water_limited · water_critical<br/>(critical: available < 0.5 × gross)"]
+    tell["TELL known percepts → forward chaining (agenda)<br/>→ conflict resolution in irrigation_action → pass 2"]
+    win{"An irrigation_action<br/>rule fired?"}
+    bc["Backward chaining on irrigate_today /<br/>skip_irrigation_today → missing percepts"]
+    insuf["certainty = insufficient_data<br/>'Insufficient data to generate a recommendation.'<br/>+ missing_data hints"]
+    act{"Winning action"}
+    a1["R-IRR-005 postpone<br/>(rain covers demand, prio 80)"]
+    a2["R-IRR-006 / 007 / 013<br/>no irrigation (prio 90 / 90 / 85)"]
+    a3["R-IRR-004 critical supply<br/>(prio 70)"]
+    a4["R-IRR-003 deficit irrigation<br/>(prio 60)"]
+    a5["R-IRR-002 full irrigation<br/>(prio 50)"]
+    expl["Explanation contract: reason, facts, rules, alternatives,<br/>what could change, calculation, certainty = entailed, data_quality"]
+    persist{"persist?"}
+    save["store water_calculation (if ETc computed),<br/>weather + irrigation alerts (R-ALR-*),<br/>recommendation + audit (if one was derived)"]
+    resp(["Response {status, recommendation_id,<br/>explanation, weather_status, alerts_created}"])
+
+    start --> acc
+    acc -- no --> e404
+    acc -- yes --> eff
+    eff -- no --> e422
+    eff -- yes --> kb --> wx --> pd
+    pd -- no --> stu --> et0
+    pd -- yes --> stage --> season
+    season -- "days < 0" --> nyp --> tell
+    season -- "days ≥ season length" --> se --> tell
+    season -- in season --> kc --> et0
+    et0 -- no --> etu --> aw
+    et0 -- yes --> etc --> pr
+    pr -- no --> pru --> aw
+    pr -- yes --> nir --> aw
+    aw -- no --> awu --> tell
+    aw -- yes --> wp --> tell
+    tell --> win
+    win -- no --> bc --> insuf --> persist
+    win -- yes --> act
+    act --> a1 & a2 & a3 & a4 & a5
+    a1 & a2 & a3 & a4 & a5 --> expl --> persist
+    persist -- yes --> save --> resp
+    persist -- no --> resp
+
+    classDef wo fill:#0F3D2E,stroke:#0F3D2E,color:#ffffff
+    classDef accent fill:#ECFDF5,stroke:#10B981,color:#0F3D2E
+    classDef warn fill:#FFF7ED,stroke:#C2410C,color:#7C2D12
+    classDef dec fill:#ffffff,stroke:#0F3D2E,color:#111111
+    class start,resp wo
+    class tell,expl,a1,a2,a3,a4,a5 accent
+    class e404,e422,stu,etu,pru,awu,insuf,bc warn

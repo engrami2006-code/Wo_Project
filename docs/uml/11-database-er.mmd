@@ -1,0 +1,306 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+erDiagram
+    companies ||--o{ users : "employs (CASCADE)"
+    companies ||--o{ farms : "owns (CASCADE)"
+    users ||--o{ farms : "owns, INDIVIDUAL (CASCADE)"
+    farms ||--o{ farm_members : "CASCADE"
+    users ||--o{ farm_members : "CASCADE"
+    farms ||--o{ farm_crops : "plantings (CASCADE)"
+    crops ||--o{ farm_crops : "RESTRICT"
+    irrigation_methods |o--o{ farm_crops : "SET NULL"
+    companies |o--o{ crops : "custom crops (CASCADE)"
+    users |o--o{ crops : "custom crops (CASCADE)"
+    farms ||--o{ hydroponic_systems : "CASCADE"
+    crops |o--o{ hydroponic_systems : "SET NULL"
+    hydroponic_systems ||--o{ hydroponic_records : "CASCADE"
+    farms ||--o{ water_records : "CASCADE"
+    farm_crops |o--o{ water_records : "SET NULL"
+    hydroponic_systems |o--o{ water_records : "SET NULL"
+    farms ||--o{ water_calculations : "CASCADE"
+    farm_crops |o--o{ water_calculations : "SET NULL"
+    weather_snapshots |o--o{ water_calculations : "SET NULL"
+    farms ||--o{ water_baselines : "CASCADE"
+    farms ||--o{ weather_snapshots : "CASCADE"
+    farms ||--o{ recommendations : "CASCADE"
+    farm_crops |o--o{ recommendations : "SET NULL"
+    hydroponic_systems |o--o{ recommendations : "SET NULL"
+    farms ||--o{ alerts : "CASCADE"
+    farm_crops |o--o{ alerts : "CASCADE"
+    hydroponic_systems |o--o{ alerts : "CASCADE"
+    farms |o--o{ land_distribution_requests : "SET NULL"
+    users ||--o{ land_distribution_requests : "CASCADE"
+    land_distribution_requests ||--|| land_distribution_results : "CASCADE"
+    users ||--o{ chat_sessions : "CASCADE"
+    chat_sessions ||--o{ chat_messages : "CASCADE"
+    knowledge_bases ||--o{ knowledge_facts : "CASCADE"
+    knowledge_bases ||--o{ knowledge_rules : "CASCADE"
+    knowledge_bases ||--o{ knowledge_percepts : "CASCADE"
+    knowledge_rules |o--o{ knowledge_rule_history : "SET NULL"
+    users |o--o{ audit_logs : "SET NULL"
+    companies |o--o{ audit_logs : "SET NULL"
+
+    companies {
+        uuid id PK
+        string name
+    }
+    users {
+        uuid id PK
+        string email UK
+        string password_hash
+        string role
+        uuid company_id FK
+        bool is_active
+        int token_version
+    }
+    farms {
+        uuid id PK
+        string name
+        uuid company_id FK
+        uuid owner_user_id FK
+        float latitude "-90..90"
+        float longitude "-180..180"
+        float total_area_m2 ">0"
+        float daily_water_allowance_l
+    }
+    farm_members {
+        uuid id PK
+        uuid farm_id FK
+        uuid user_id FK "unique(farm_id,user_id)"
+    }
+    crops {
+        uuid id PK
+        string code
+        float kc_ini
+        float kc_mid
+        float kc_end
+        int l_ini_dev_mid_late
+        float ky
+        string source
+        bool is_reference
+        uuid company_id FK
+    }
+    irrigation_methods {
+        uuid id PK
+        string code UK
+        float efficiency "(0, 1]"
+        string source
+    }
+    farm_crops {
+        uuid id PK
+        uuid farm_id FK
+        uuid crop_id FK
+        uuid irrigation_method_id FK
+        float area_m2 ">0"
+        date planting_date
+        string stage_override
+        string status
+    }
+    hydroponic_profiles {
+        uuid id PK
+        string code UK
+        float ph_min
+        float ph_max
+        float ec_min
+        float ec_max
+        string source
+    }
+    hydroponic_systems {
+        uuid id PK
+        uuid farm_id FK
+        uuid crop_id FK
+        string system_type
+        float growing_area_m2 ">0"
+        int plant_count
+        float reservoir_capacity_l
+        bool is_closed_loop
+        float ph_min_max
+        float ec_min_max
+    }
+    hydroponic_records {
+        uuid id PK
+        uuid system_id FK
+        timestamptz recorded_at "ix(system_id,recorded_at)"
+        float water_input_l
+        float water_consumed_l
+        float water_discharged_l
+        float ph "0..14"
+        float ec ">=0"
+    }
+    water_records {
+        uuid id PK
+        uuid farm_id FK
+        uuid farm_crop_id FK
+        uuid hydroponic_system_id FK
+        timestamptz recorded_at "ix(farm_id,recorded_at)"
+        float volume_l ">=0"
+        string source
+        string record_type
+    }
+    water_calculations {
+        uuid id PK
+        uuid farm_id FK
+        uuid farm_crop_id FK
+        uuid weather_snapshot_id FK
+        date target_date
+        json inputs_parameters_steps_result
+    }
+    water_baselines {
+        uuid id PK
+        uuid farm_id FK
+        uuid farm_crop_id FK
+        date period_start
+        date period_end
+        float total_volume_l
+        float area_m2
+    }
+    weather_snapshots {
+        uuid id PK
+        uuid farm_id FK
+        timestamptz fetched_at "ix(farm_id,fetched_at)"
+        json current
+        json daily
+        string variables_set
+    }
+    knowledge_bases {
+        uuid id PK
+        string name UK
+        int version
+        bool is_active
+    }
+    knowledge_facts {
+        uuid id PK
+        uuid kb_id FK
+        string key "unique(kb_id,key)"
+        json value
+        string kind "scientific|policy|axiom"
+        string source
+        int version
+    }
+    knowledge_rules {
+        uuid id PK
+        uuid kb_id FK
+        string code "unique(kb_id,code)"
+        text antecedent
+        string consequent
+        string action_group
+        int priority
+        int version
+        bool is_active
+    }
+    knowledge_rule_history {
+        uuid id PK
+        uuid rule_id FK
+        string rule_code
+        int version
+        string change_type
+        json snapshot
+    }
+    knowledge_percepts {
+        uuid id PK
+        uuid kb_id FK
+        string symbol "unique(kb_id,symbol)"
+        json depends_on
+        string threshold_key
+    }
+    recommendations {
+        uuid id PK
+        uuid farm_id FK
+        uuid farm_crop_id FK
+        uuid hydroponic_system_id FK
+        string action
+        float amount_l
+        string certainty
+        json payload
+        string status
+    }
+    alerts {
+        uuid id PK
+        uuid farm_id FK
+        uuid farm_crop_id FK
+        uuid hydroponic_system_id FK
+        string rule_code
+        string severity
+        json evidence
+        string status
+        string dedupe_key
+    }
+    land_distribution_requests {
+        uuid id PK
+        uuid farm_id FK
+        uuid created_by_id FK
+        string objective
+        json inputs
+    }
+    land_distribution_results {
+        uuid id PK
+        uuid request_id FK "unique"
+        string status
+        json allocation
+        json comparison
+    }
+    chat_sessions {
+        uuid id PK
+        uuid user_id FK
+        string language
+        json state
+    }
+    chat_messages {
+        uuid id PK
+        uuid session_id FK
+        string role
+        text text
+        json payload
+    }
+    audit_logs {
+        uuid id PK
+        uuid user_id FK
+        uuid company_id FK
+        string action
+        json details
+        string ip_address
+    }

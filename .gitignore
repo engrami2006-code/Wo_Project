@@ -1,0 +1,30 @@
+# secrets / env
+.env
+*.env.local
+backend/.env
+frontend/.env
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+# databases / logs
+*.db
+*.sqlite3
+*.log
+logs/
+pgdata/
+# node
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+# editors / OS
+.DS_Store
+Thumbs.db
+.idea/

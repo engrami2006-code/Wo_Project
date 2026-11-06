@@ -1,0 +1,53 @@
+# WO — Water Optimization: PostgreSQL + FastAPI backend + React frontend (nginx).
+# Usage:  cp .env.example .env   (set JWT_SECRET)   then   docker compose up --build
+# App: http://localhost:8080   API docs: http://localhost:8080/api/docs
+name: wo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wo}
+      POSTGRES_USER: ${POSTGRES_USER:-wo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"   # local-only, handy for running the backend outside Docker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wo} -d ${POSTGRES_DB:-wo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-wo}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wo}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (min 32 chars) in .env}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-120}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://localhost:5173}
+      OPEN_METEO_BASE_URL: ${OPEN_METEO_BASE_URL:-https://api.open-meteo.com/v1/forecast}
+      WEATHER_OFFLINE_MODE: ${WEATHER_OFFLINE_MODE:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      # Trust X-Forwarded-For from the nginx frontend so audit logs and rate limits see real client IPs.
+      FORWARDED_ALLOW_IPS: "*"
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  pgdata:

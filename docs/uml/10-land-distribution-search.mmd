@@ -1,0 +1,113 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+flowchart TD
+    req(["POST /api/land-distribution/optimize<br/>area, N units, water W, objective, candidates (≤ 6)"])
+    build["build_problem: unit area u = area / N<br/>wᵢ = water/m² × u (FAO-56 seasonal or user value)<br/>pᵢ = yield × u (× price) · minᵢ, maxᵢ from areas / targets"]
+    inf{"infeasibility_reason()?<br/>minimums vs land / water,<br/>target vs upper bound"}
+    infr(["status = infeasible<br/>+ violated constraint"])
+
+    subgraph FORM["Problem formulation (AIMA §3.1)"]
+        direction TB
+        f1["State: (i, units_used, water_used, allocation[0..i-1])"]
+        f2["Actions: nᵢ ∈ [minᵢ, maxᵢ] keeping land ≤ N and water ≤ W<br/>after reserving later crops' minimums"]
+        f3["Transition: append nᵢ, units += nᵢ, water += nᵢ·wᵢ"]
+        f4["Goal: i = m (+ production ≥ target for min_water)"]
+        f5["Step cost: nᵢ(p_max − pᵢ) + fallow·p_max at goal<br/>(min_water: nᵢ·wᵢ)"]
+        f6["h(s) = U·p_max − UB(s), UB = min(land-relaxed,<br/>water-relaxed) fractional knapsack — admissible"]
+        f1 ~~~ f2 ~~~ f3 ~~~ f4 ~~~ f5 ~~~ f6
+    end
+
+    subgraph ASTAR["A* (search.py::best_first, f = g + h)"]
+        direction TB
+        init["frontier ← {start, f = h(start)}<br/>best_g[key(start)] ← 0"]
+        empty{"frontier empty?"}
+        nf(["not found"])
+        pop["pop node with lowest f"]
+        stale{"g > best_g[key]?<br/>(stale entry)"}
+        goal{"goal test<br/>(on pop)"}
+        found(["solution: allocation, cost<br/>(optimal: h admissible)"])
+        lim{"expanded > 200,000?"}
+        limr(["limit_reached"])
+        exp["for each action n:<br/>s′ = result(s, n), g′ = g + cost"]
+        dup{"g′ ≥ best_g[key(s′)]?"}
+        hinf{"h(s′) = ∞?<br/>(dead end)"}
+        push["best_g[key(s′)] ← g′<br/>push (g′ + h(s′), s′)"]
+        skip["skip"]
+    end
+
+    cmp["Also run the requested baselines on the same problem:<br/>UCS (f = g), Greedy (f = h), BFS (FIFO, early goal test)<br/>→ comparison table (nodes, frontier, cost, runtime)"]
+    out(["Response: status, allocation (units, m², L, kg),<br/>totals, binding constraints, formulation, comparison,<br/>'Optimal under the selected objective and constraints.'"])
+
+    req --> build --> inf
+    inf -- yes --> infr
+    inf -- no --> init
+    inf -- no --> cmp
+    FORM ~~~ init
+    init --> empty
+    empty -- yes --> nf
+    empty -- no --> pop --> stale
+    stale -- yes --> empty
+    stale -- no --> goal
+    goal -- yes --> found
+    goal -- no --> lim
+    lim -- yes --> limr
+    lim -- no --> exp --> dup
+    dup -- yes --> skip --> empty
+    dup -- no --> hinf
+    hinf -- yes --> skip
+    hinf -- no --> push --> empty
+    found --> out
+    nf --> out
+    limr --> out
+    cmp --> out
+
+    classDef wo fill:#0F3D2E,stroke:#0F3D2E,color:#ffffff
+    classDef accent fill:#ECFDF5,stroke:#10B981,color:#0F3D2E
+    classDef warn fill:#FFF7ED,stroke:#C2410C,color:#7C2D12
+    class req,out wo
+    class f1,f2,f3,f4,f5,f6,found accent
+    class infr,nf,limr warn

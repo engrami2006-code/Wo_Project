@@ -1,0 +1,141 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+classDiagram
+    direction LR
+    class WaterRecord {
+        +UUID id
+        +UUID farm_id
+        +UUID farm_crop_id «nullable»
+        +UUID hydroponic_system_id «nullable»
+        +datetime recorded_at
+        +float volume_l «≥0»
+        +WaterSource source
+        +WaterRecordType record_type «irrigation|hydroponic|other»
+        +bool is_demo
+    }
+    class WaterCalculation {
+        <<immutable>>
+        +UUID id
+        +UUID farm_id
+        +UUID farm_crop_id
+        +date target_date
+        +str method «FAO-56 single crop coefficient»
+        +json inputs
+        +json parameters
+        +json steps
+        +json result «kc, etc_mm, p_eff_mm, nir_mm, net_l, gross_l»
+        +UUID weather_snapshot_id
+    }
+    class WaterBaseline {
+        +UUID id
+        +UUID farm_id
+        +UUID farm_crop_id «nullable»
+        +date period_start, period_end «end ≥ start»
+        +float total_volume_l «≥0»
+        +float area_m2 «>0»
+    }
+    class WeatherSnapshot {
+        +UUID id
+        +datetime fetched_at
+        +json daily
+    }
+    class Farm
+    class FarmCrop
+    class WaterSource {
+        <<enumeration>>
+        well
+        municipal
+        desalinated
+        treated_wastewater
+        rainwater
+        surface_water
+        recycled
+        other
+    }
+    class fao56 {
+        <<module>>
+        +growth_stage(crop, planting_date, on, override) StageInfo
+        +crop_coefficient(crop, stage, u2, rh_min) KcResult
+        +u2_from_uz(uz, z) float
+        +water_requirement(et0_mm, kc, area_m2, efficiency, precipitation_mm, effective_rain_fraction) RequirementResult
+        +seasonal_gross_requirement_l_per_m2(crop, et0, efficiency) dict
+    }
+    class water_service {
+        <<service>>
+        +create_record(user, data) WaterRecord
+        +analytics(user, farm_id, period, from, to) dict
+        +create_baseline(user, data) WaterBaseline
+        +impact(user, farm_id) ImpactReport
+    }
+    class irrigation_service {
+        <<service>>
+        +calculate(user, req) dict
+        +recommend(user, req) dict
+        +schedule(user, req) dict
+    }
+    class ImpactReport {
+        <<response>>
+        +float calculated_requirement_l
+        +float actual_usage_l
+        +float apparent_savings_l
+        +float measured_savings_pct
+        +str measured_savings_note
+        +str apparent_savings_note
+    }
+
+    Farm "1" *-- "0..*" WaterRecord
+    FarmCrop "0..1" -- "0..*" WaterRecord
+    Farm "1" *-- "0..*" WaterCalculation
+    FarmCrop "0..1" -- "0..*" WaterCalculation
+    WeatherSnapshot "0..1" -- "0..*" WaterCalculation : used
+    Farm "1" *-- "0..*" WaterBaseline
+    WaterRecord ..> WaterSource
+    irrigation_service ..> fao56 : FAO-56 steps
+    irrigation_service ..> WaterCalculation : stores
+    water_service ..> WaterRecord : CRUD + alert rules
+    water_service ..> ImpactReport : builds
+    water_service ..> WaterBaseline

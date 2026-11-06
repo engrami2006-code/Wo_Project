@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * WO design tokens. Colours are stored as RGB triplets so Tailwind can apply opacity.
+ * forest = primary/sidebar · emerald = success · teal = accent · water = water data
+ * earth = critical accent (use sparingly) · canvas/surface/ink/muted/line = neutrals
+ */
+:root {
+  --wo-forest: 15 61 46;
+  --wo-emerald: 16 185 129;
+  --wo-teal: 13 148 136;
+  --wo-water: 14 165 233;
+  --wo-earth: 194 65 12;
+  --wo-canvas: 246 248 245;
+  --wo-surface: 255 255 255;
+  --wo-ink: 16 35 27;
+  --wo-muted: 91 107 99;
+  --wo-line: 227 233 228;
+  --wo-info: 2 132 199;
+  --wo-warning: 217 119 6;
+  --wo-critical: 194 65 12;
+
+  --wo-radius-card: 1rem;
+  --wo-sidebar: 16.5rem;
+  --wo-sidebar-collapsed: 4.75rem;
+
+  color-scheme: light;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: 'kern';
+    min-height: 100vh;
+  }
+  html[lang='ar'] body {
+    line-height: 1.65;
+  }
+  h1, h2, h3, h4 {
+    @apply text-ink;
+    letter-spacing: -0.01em;
+  }
+  html[lang='ar'] h1,
+  html[lang='ar'] h2,
+  html[lang='ar'] h3 {
+    letter-spacing: 0;
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--wo-teal));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: rgb(var(--wo-emerald) / 0.22);
+  }
+  /* Number inputs show a unit suffix instead of spinner arrows. */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  code, kbd, samp, pre {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+  .card-flat {
+    @apply rounded-2xl border border-line bg-surface;
+  }
+  .hover-lift {
+    @apply transition-[transform,box-shadow] duration-200 ease-out;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-0.5 shadow-lift;
+  }
+  .label {
+    @apply text-sm font-medium text-ink;
+  }
+  .help {
+    @apply text-xs text-muted;
+  }
+  .input {
+    @apply block w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink
+      placeholder:text-muted/70 transition-colors
+      hover:border-forest-200
+      focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/25
+      disabled:cursor-not-allowed disabled:bg-canvas disabled:text-muted;
+  }
+  .input[aria-invalid='true'] {
+    @apply border-critical/70 focus:ring-critical/20;
+  }
+  .formula {
+    @apply font-mono text-[0.8125rem] leading-relaxed text-forest-700;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .ltr-isolate {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-forest-50;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  }
+  [dir='rtl'] .skeleton::after {
+    @apply translate-x-full;
+    animation-name: shimmer-rtl;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--wo-line)) transparent;
+  }
+  .flip-rtl {
+    transition: transform 0.2s;
+  }
+  [dir='rtl'] .flip-rtl {
+    transform: scaleX(-1);
+  }
+  .stagger > * {
+    @apply animate-reveal;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger > *:nth-child(8) { animation-delay: 420ms; }
+  .stagger > *:nth-child(9) { animation-delay: 480ms; }
+  .stagger > *:nth-child(n + 10) { animation-delay: 540ms; }
+}
+
+@keyframes shimmer-rtl {
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Recharts: keep text on brand neutrals */
+.recharts-cartesian-axis-tick text,
+.recharts-legend-item-text {
+  fill: rgb(var(--wo-muted));
+  font-size: 12px;
+}
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

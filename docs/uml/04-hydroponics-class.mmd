@@ -1,0 +1,145 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+classDiagram
+    direction LR
+    class HydroSystemType {
+        <<enumeration>>
+        NFT
+        DWC
+        EBB_FLOW
+        DRIP
+        WICK
+        AEROPONICS
+        RAFT
+        SUBSTRATE
+    }
+    class HydroponicSystem {
+        +UUID id
+        +UUID farm_id
+        +str name
+        +HydroSystemType system_type
+        +UUID crop_id «nullable»
+        +float growing_area_m2 «>0»
+        +int plant_count «≥0»
+        +float reservoir_capacity_l «>0»
+        +bool is_closed_loop
+        +SystemStatus status «active|inactive|maintenance»
+        +float ph_min, ph_max «0..14, min ＜ max»
+        +float ec_min, ec_max «mS/cm, min ＜ max»
+        +str threshold_source
+    }
+    class HydroponicRecord {
+        +UUID id
+        +UUID system_id
+        +datetime recorded_at
+        +float period_days «>0»
+        +float water_input_l «≥0»
+        +float water_consumed_l
+        +float water_recycled_l
+        +float water_discharged_l
+        +float water_losses_l
+        +float reservoir_start_l, reservoir_end_l
+        +float ph «0..14»
+        +float ec «≥0»
+        +float water_temp_c
+    }
+    class HydroponicProfile {
+        <<reference>>
+        +str code «lettuce_cornell»
+        +str crop_code
+        +float ph_min, ph_max
+        +float ec_min, ec_max
+        +str source
+    }
+    class BalanceResult {
+        <<value>>
+        +float input_l
+        +float delta_storage_l
+        +float unaccounted_l
+        +float unaccounted_fraction
+        +float recirculation_ratio
+        +float input_per_day_l
+        +float input_per_plant_day_l
+        +float input_per_m2_day_l
+        +list missing_terms
+    }
+    class hydro_balance {
+        <<module>>
+        +compute_balance(input_l, consumed_l, recycled_l, discharged_l, losses_l, reservoir_start_l, reservoir_end_l, period_days, plant_count, area_m2) BalanceResult
+    }
+    class perception_hydroponics {
+        <<module>>
+        +perceive_hydroponics(system, latest, latest_balance, history, now, params) HydroPerception
+    }
+    class hydro_service {
+        <<service>>
+        +create_system(user, data)
+        +update_system(user, id, data)
+        +add_record(user, id, data) dict
+        +evaluate_system(system) explanation
+        +balance_report(user, id) dict
+    }
+    class WaterRecord {
+        +record_type = hydroponic
+        +float volume_l = water_input_l
+    }
+    class Farm
+    class Crop
+    class KBAgent {
+        +run_cycle(percepts, variables, primary_symbols, goals)
+    }
+
+    Farm "1" *-- "0..*" HydroponicSystem
+    Crop "0..1" -- "0..*" HydroponicSystem
+    HydroponicSystem "1" *-- "0..*" HydroponicRecord
+    HydroponicProfile ..> HydroponicSystem : applies ranges (profile_code)
+    HydroponicSystem ..> HydroSystemType
+    hydro_service ..> hydro_balance : uses
+    hydro_balance ..> BalanceResult : returns
+    hydro_service ..> perception_hydroponics : percepts
+    hydro_service ..> KBAgent : hydroponics rules R-HYD-*
+    hydro_service ..> WaterRecord : creates one per record

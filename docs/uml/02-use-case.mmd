@@ -1,0 +1,109 @@
+---
+config:
+  theme: base
+  fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 40
+    rankSpacing: 55
+    padding: 12
+    curve: basis
+  class:
+    hideEmptyMembersBox: true
+  er:
+    layoutDirection: TB
+  sequence:
+    mirrorActors: false
+    wrap: true
+    width: 170
+  themeVariables:
+    fontFamily: "Inter, DejaVu Sans, Arial, sans-serif"
+    fontSize: "15px"
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#0F3D2E"
+    secondaryColor: "#F4F6F5"
+    secondaryBorderColor: "#0F3D2E"
+    tertiaryColor: "#ffffff"
+    tertiaryBorderColor: "#9CA3AF"
+    lineColor: "#0F3D2E"
+    textColor: "#111111"
+    clusterBkg: "#FAFBFA"
+    clusterBorder: "#0F3D2E"
+    edgeLabelBackground: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#0F3D2E"
+    actorTextColor: "#111111"
+    signalColor: "#0F3D2E"
+    signalTextColor: "#111111"
+    labelBoxBkgColor: "#ECFDF5"
+    labelBoxBorderColor: "#10B981"
+    noteBkgColor: "#ECFDF5"
+    noteBorderColor: "#10B981"
+    activationBkgColor: "#ECFDF5"
+    activationBorderColor: "#0F3D2E"
+---
+flowchart LR
+    adm["«actor»<br/>SUPER_ADMIN"]
+    own["«actor»<br/>COMPANY_OWNER"]
+    ind["«actor»<br/>INDIVIDUAL"]
+    fm["«actor»<br/>FARM_MANAGER"]
+    emp["«actor»<br/>EMPLOYEE"]
+
+    adm -. "generalises" .-> own
+    own -. "generalises" .-> fm
+    ind -. "generalises" .-> fm
+    fm -. "generalises" .-> emp
+
+    subgraph SYS["WO — Water Optimization (system boundary)"]
+        direction TB
+        subgraph G1["Every role (EMPLOYEE and above) — on visible farms"]
+            direction TB
+            uc1(["Sign in / out, edit own profile"])
+            uc2(["View dashboard & analytics"])
+            uc3(["Record water use"])
+            uc4(["Add hydroponic record<br/>(balance + KB evaluation)"])
+            uc5(["Get irrigation recommendation<br/>(KB agent, explained)"])
+            uc6(["Ask the assistant (chatbot AR/EN)"])
+            uc7(["View weather<br/>(fresh · cached · unavailable)"])
+            uc8(["Review alerts & recommendations"])
+            uc9(["Optimise land distribution (A*)"])
+            uc10(["Schedule irrigation (CSP)"])
+            uc11(["Explore KB, validate, Logic Lab"])
+        end
+        subgraph G2["FARM_MANAGER and above"]
+            direction TB
+            uc12(["Edit farms, plantings,<br/>hydroponic systems"])
+            uc13(["Record baseline, delete records"])
+        end
+        subgraph G3["INDIVIDUAL and COMPANY_OWNER"]
+            direction TB
+            uc15(["Register account"])
+            uc14(["Create & delete farms"])
+        end
+        subgraph G4["COMPANY_OWNER"]
+            direction TB
+            uc16(["Manage company users<br/>& farm assignments"])
+            uc17(["Read company audit log"])
+        end
+        subgraph G5["SUPER_ADMIN"]
+            direction TB
+            uc18(["Edit KB rules & facts<br/>(DPLL-validated, versioned)"])
+            uc19(["Manage companies & all users,<br/>full audit log, platform statistics"])
+        end
+    end
+
+    emp --- G1
+    fm --- G2
+    ind --- G3
+    own --- G3
+    own --- G4
+    adm --- G5
+
+    classDef actor fill:#0F3D2E,stroke:#0F3D2E,color:#ffffff
+    classDef uc fill:#ffffff,stroke:#0F3D2E,color:#111111
+    classDef ucAccent fill:#ECFDF5,stroke:#10B981,color:#0F3D2E
+    class emp,fm,ind,own,adm actor
+    class uc1,uc2,uc3,uc4,uc6,uc7,uc8,uc11,uc12,uc13,uc14,uc15,uc16,uc17,uc19 uc
+    class uc5,uc9,uc10,uc18 ucAccent
