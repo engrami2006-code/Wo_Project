@@ -129,3 +129,5 @@ See [`docs/limitations.md`](docs/limitations.md). In short:
 - Land search is limited to 60 units and 6 crops.
 
 **Sources** for agronomic values: FAO-56 (Allen et al., 1998), FAO-33/FAO-66 (Ky), FAO Irrigation Water Management Training Manuals 3 and 4, and the Cornell CEA Hydroponic Lettuce Handbook. Statistics in the presentation come from FAO AQUASTAT 2025.
+
+
