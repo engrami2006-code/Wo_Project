@@ -66,7 +66,15 @@
 | Weather | Open-Meteo behind a provider interface, with offline fallback to saved snapshots |
 
 ---
+## System Architecture
 
+<p align="center">
+  <img src="docs/uml/png/01-high-level-architecture.png" width="90%" alt="WO High-Level Architecture">
+</p>
+
+WO follows a three-tier architecture consisting of a React frontend, a FastAPI backend, and a PostgreSQL database. Its decision engine uses symbolic AI to provide explainable agricultural water management recommendations.
+
+For the complete technical documentation, see [System Architecture](docs/architecture.md).
 ## Quick start in VS Code (5 steps)
 
 **Prerequisites:** Python 3.11+, Node.js 20+, and PostgreSQL 16. If you can't install PostgreSQL, use Docker (option B below) or the SQLite fallback.
