@@ -2,6 +2,55 @@
 <p align="center">
   <img src="docs/screenshots/dashboard-en.png" width="100%" alt="WO Dashboard">
 </p>
+---
+
+## Application Screenshots
+
+### Dashboard
+<p align="center">
+  <img src="docs/screenshots/dashboard-en.png" width="90%" alt="WO Dashboard">
+</p>
+
+### Farm & Crop Management
+<p align="center">
+  <img src="docs/screenshots/crops-en.png" width="85%" alt="Crops Library">
+  <img src="docs/screenshots/farm-details-en.png" width="85%" alt="Farm Details">
+</p>
+
+### Water Management & Irrigation
+<p align="center">
+  <img src="docs/screenshots/water-en.png" width="85%" alt="Water Management">
+  <img src="docs/screenshots/calculations-en.png" width="85%" alt="Water Calculations">
+  <img src="docs/screenshots/schedule-en.png" width="85%" alt="Irrigation Schedule">
+  <img src="docs/screenshots/schedule-solved-en.png" width="85%" alt="Optimized Irrigation Schedule">
+</p>
+
+### Analytics & Weather
+<p align="center">
+  <img src="docs/screenshots/analytics-en.png" width="85%" alt="Analytics">
+  <img src="docs/screenshots/weather-en.png" width="85%" alt="Weather">
+</p>
+
+### AI Assistant & Explainable Reasoning
+<p align="center">
+  <img src="docs/screenshots/chatbot-en.png" width="85%" alt="WO AI Assistant">
+  <img src="docs/screenshots/chatbot-reasoning-en.png" width="85%" alt="AI Reasoning">
+</p>
+
+### Recommendations & Alerts
+<p align="center">
+  <img src="docs/screenshots/recommendations-en.png" width="85%" alt="Recommendations">
+  <img src="docs/screenshots/recommendation-detail-en.png" width="85%" alt="Recommendation Details">
+  <img src="docs/screenshots/alerts-en.png" width="85%" alt="Alerts">
+</p>
+
+### Administration
+<p align="center">
+  <img src="docs/screenshots/admin-en.png" width="85%" alt="Administration">
+  <img src="docs/screenshots/admin-stats-en.png" width="85%" alt="Admin Statistics">
+</p>
+
+---
 **Smart water management for agriculture.** WO is a Knowledge-Based Intelligent Decision Support System. It helps farmers, farm managers and agricultural companies decide how much to irrigate, monitor hydroponic systems, record and analyse water use, and plan land allocation under a water budget. Every recommendation explains itself.
 
 > Course project for an Introduction to Artificial Intelligence course (Russell & Norvig, *AIMA*).
