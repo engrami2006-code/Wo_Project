@@ -1,5 +1,7 @@
 # WO — Water Optimization
-
+<p align="center">
+  <img src="docs/screenshots/dashboard-en.png" width="100%" alt="WO Dashboard">
+</p>
 **Smart water management for agriculture.** WO is a Knowledge-Based Intelligent Decision Support System. It helps farmers, farm managers and agricultural companies decide how much to irrigate, monitor hydroponic systems, record and analyse water use, and plan land allocation under a water budget. Every recommendation explains itself.
 
 > Course project for an Introduction to Artificial Intelligence course (Russell & Norvig, *AIMA*).
